@@ -36,6 +36,14 @@ pddl_heur_t *pddlHeurHMax(const pddl_fdr_t *fdr, pddl_err_t *err)
 {
     pddl_heur_hmax_t *h = ZALLOC(pddl_heur_hmax_t);
     pddlHMaxInit(&h->hmax, fdr);
+
+    //Vi vil gerne printe FDR'en så vi ved hvilket data den indeholder  
+    printf("Nu printer vi FDR: \n");
+    pddlFDRLogInfo(fdr, err);
+    printf("Nu printer vi VARS for FDR: \n");
+    pddlFDRVarsPrintTable(&fdr->var, 150, NULL, err);
+    printf("FDR printet \n");
+
     pddlFDRVarsInitCopy(&h->fdr_vars, &fdr->var);
     _pddlHeurInit(&h->heur, heurDel, heurEstimate);
     return &h->heur;
