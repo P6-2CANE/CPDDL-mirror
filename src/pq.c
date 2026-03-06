@@ -31,6 +31,7 @@ void pddlPQInit(pddl_pq_t *q)
 {
     pddlPQBucketQueueInit(&q->bucket_queue);
     q->bucket = 1;
+    //printf("\n Nu printer vi bucket: bucket: %d, bucket_size: %d, lowest_key: %d \n", q->bucket, q->bucket_queue.bucket_size, q->bucket_queue.lowest_key);
 }
 
 void pddlPQFree(pddl_pq_t *q)

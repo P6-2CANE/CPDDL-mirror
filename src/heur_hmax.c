@@ -43,6 +43,14 @@ pddl_heur_t *pddlHeurHMax(const pddl_fdr_t *fdr, pddl_err_t *err)
     printf("Nu printer vi VARS for FDR: \n");
     pddlFDRVarsPrintTable(&fdr->var, 150, NULL, err);
     printf("FDR printet \n");
+    
+    printf("nu printer vi operationer: \n");
+    
+    for (int i = 0; i < fdr->op.op_size; i++) {
+        printf("OP SIZE NAVN %s\n", fdr->op.op[i]->name);
+    }
+    
+    printf("Operationer printet\n");
 
     pddlFDRVarsInitCopy(&h->fdr_vars, &fdr->var);
     _pddlHeurInit(&h->heur, heurDel, heurEstimate);
