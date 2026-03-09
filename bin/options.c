@@ -1075,6 +1075,7 @@ static void setGroundPlannerOptions(void)
                      "lmc", GROUND_PLAN_HEUR_LMC,
                      "max", GROUND_PLAN_HEUR_MAX,
                      "hmax", GROUND_PLAN_HEUR_MAX,
+                     "h1", GROUND_PLAN_HEUR_1,
                      "add", GROUND_PLAN_HEUR_ADD,
                      "hadd", GROUND_PLAN_HEUR_ADD,
                      "ff", GROUND_PLAN_HEUR_FF,
