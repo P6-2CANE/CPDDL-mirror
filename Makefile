@@ -122,6 +122,7 @@ SRC += heur_dead_end
 SRC += heur_lm_cut
 SRC += heur_hmax
 SRC += heur_h1
+SRC += h_1
 SRC += heur_hadd
 SRC += heur_hff
 SRC += heur_flow
