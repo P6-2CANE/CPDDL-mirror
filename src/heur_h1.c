@@ -11,13 +11,12 @@ typedef struct pddl_heur_h1 {
 
 void printHeurH1Struct(pddl_heur_h1_t *h);
 
-static void heurDel(pddl_heur_t *_h)
-{
-    pddl_heur_h1_t *h = pddl_container_of(_h, pddl_heur_h1_t, heur);
-    _pddlHeurFree(&h->heur);
-    pddlFDRVarsFree(&h->fdr_vars);
-    pddlH1Free(&h->h1);
-    FREE(h);
+static void heurDel(pddl_heur_t *_h) {
+    pddl_heur_h1_t *h = pddl_container_of(_h, pddl_heur_h1_t, heur); /* Find the container/place in memory where h is stored */
+    //_pddlHeurFree(&h->heur); /* Empty function???? */
+    pddlFDRVarsFree(&h->fdr_vars); /* Free the memory of the pointers in the fdr variables */
+    pddlH1Free(&h->h1); /* Free the memory of the pointers in the h1 object */
+    FREE(h); /* Free the actual memory of the h object */
 }
 
 pddl_heur_t *pddlHeurH1(const pddl_fdr_t *fdr, pddl_err_t *err){
