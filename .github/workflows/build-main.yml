@@ -8,13 +8,42 @@ on:
     workflow_dispatch:
 
 
-
+# Create binary and create release from main branch with binaries
 jobs:
     build:
         runs-on: ubuntu-latest
 
         steps:
             - uses: actions/checkout@v3
-            
+
             - name: Build binary
               run: make bin
+            
+            - name: Copy makefile config
+              run: cp Makefile.config.example Makefile.config
+
+            # Multiple files, (pddl, pddle-fdr, pddle-lplan, pddl-pddl, pddl-symba)
+            - name: Create binary artifacts
+              uses: actions/upload-artifact@v3
+              with:
+                name: binary
+                path: |
+                    ./bin/pddl
+                    ./bin/pddle-fdr
+                    ./bin/pddle-lplan
+                    ./bin/pddl-pddl
+                    ./bin/pddl-symba
+            
+            - name: Create Release
+              id: create_release
+              uses: actions/create-release@v1
+              env:
+                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+              with:
+                  tag_name: v${{ github.run_number }}
+                  release_name: Release v${{ github.run_number }}
+                  body: "Automated release for commit ${{ github.sha }}"
+                  draft: false
+                  prerelease: false
+
+
