@@ -1,0 +1,50 @@
+name: Run Benchmarks
+
+on:
+  workflow_run:
+    workflows: ["build-main"]
+    types:
+      - completed
+
+jobs:
+  benchmark:
+    runs-on: self-hosted
+    steps:
+        - name: Checkout repository
+          uses: actions/checkout@v4
+
+        - name: Clone PDDL data repository
+          run: git clone https://gitlab.com/danfis/pddl-data
+
+        - name: Set up Python
+          uses: actions/setup-python@v4
+          with:
+            python-version: '3.10' 
+          
+        - name: Install dependencies
+          run: |
+            python -m pip install --upgrade pip
+            pip install -r requirements.txt
+
+        - name: Download latest release of CPDDL-mirror
+          run: |
+            if [ -d "pddl" ]; then mv pddl pddl_src; fi
+            
+            curl -sL https://api.github.com/repos/P6-2CANE/CPDDL-mirror/releases/latest | grep "browser_download_url" | cut -d '"' -f 4 | xargs -n 1 curl -LO
+            
+            chmod +x pddl
+
+        - name: Run benchmarks
+          env:
+            DISCORD_INFO_WEBHOOK: ${{ secrets.DISCORD_INFO_WEBHOOK }}
+            DISCORD_ALERT_WEBHOOK: ${{ secrets.DISCORD_ALERT_WEBHOOK }}
+            DISCORD_OVERVIEW_WEBHOOK: ${{ secrets.DISCORD_OVERVIEW_WEBHOOK }}
+          run: python3 benchy.py
+
+        - name: Clean up
+          if: always()
+          run: |
+            echo "Cleaning up..."
+            rm -rf pddl-data
+            # Optional: Clean up the downloaded binary so the runner stays tidy
+            rm -f pddl
