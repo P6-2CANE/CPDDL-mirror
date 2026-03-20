@@ -12,38 +12,76 @@ on:
 jobs:
     build:
         runs-on: ubuntu-latest
-
         steps:
             - uses: actions/checkout@v3
 
+            - name: Copy makefile config
+              run: cp Makefile.config.tpl Makefile.config
+
             - name: Build binary
               run: make bin
-            
-            - name: Copy makefile config
-              run: cp Makefile.config.example Makefile.config
 
-            # Multiple files, (pddl, pddle-fdr, pddle-lplan, pddl-pddl, pddl-symba)
-            - name: Create binary artifacts
-              uses: actions/upload-artifact@v4
-              with:
-                name: binary
-                path: |
-                    ./bin/pddl
-                    ./bin/pddle-fdr
-                    ./bin/pddle-lplan
-                    ./bin/pddl-pddl
-                    ./bin/pddl-symba
-            
             - name: Create Release
               id: create_release
               uses: actions/create-release@v1
               env:
                   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
               with:
-                  tag_name: v${{ github.run_number }}
-                  release_name: Release v${{ github.run_number }}
-                  body: "Automated release for commit ${{ github.sha }}"
-                  draft: false
-                  prerelease: false
+                tag_name: v${{ github.run_number }}
+                release_name: Release v${{ github.run_number }}
+                body: "Release of version v${{ github.run_number }} with binaries."
+                draft: false
+                prerelease: false
+
+            - name: Upload Release Assets
+              uses: actions/upload-release-asset@v1
+              env:
+                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+              with:
+                  upload_url: ${{ steps.create_release.outputs.upload_url }}
+                  asset_path: ./bin/pddl
+                  asset_name: pddl
+                  asset_content_type: application/octet-stream
+
+            - name: Upload Release Assets
+              uses: actions/upload-release-asset@v1
+              env:
+                GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+              with:
+                upload_url: ${{ steps.create_release.outputs.upload_url }}
+                asset_path: ./bin/pddl-fdr
+                asset_name: pddle-fdr
+                asset_content_type: application/octet-stream
+
+            - name: Upload Release Assets
+              uses: actions/upload-release-asset@v1
+              env:
+                GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+              with:
+                upload_url: ${{ steps.create_release.outputs.upload_url }}
+                asset_path: ./bin/pddl-lplan
+                asset_name: pddle-lplan
+                asset_content_type: application/octet-stream
+
+            - name: Upload Release Assets
+              uses: actions/upload-release-asset@v1
+              env:
+                GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+              with:
+                upload_url: ${{ steps.create_release.outputs.upload_url }}
+                asset_path: ./bin/pddl-pddl
+                asset_name: pddl-pddl
+                asset_content_type: application/octet-stream
+                
+            - name: Upload Release Assets
+              uses: actions/upload-release-asset@v1
+              env:
+                GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+              with:
+                upload_url: ${{ steps.create_release.outputs.upload_url }}
+                asset_path: ./bin/pddl-symba
+                asset_name: pddl-symba
+                asset_content_type: application/octet-stream 
 
 
+            
