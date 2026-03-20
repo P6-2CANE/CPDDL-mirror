@@ -28,3 +28,5 @@ src/lemon
 src/_parser.c
 src/_parser.h
 src/_parser.out
+/.github/scripts/data/*
+!/.github/scripts/data/.gitkeep

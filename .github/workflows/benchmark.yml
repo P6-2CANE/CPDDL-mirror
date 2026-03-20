@@ -1,20 +1,52 @@
 name: Run Benchmarks
 
 on:
-  workflow_run:
-    workflows: ["build-main"]
-    types:
-      - completed
+  push:
+    branches:
+      - main
 
 jobs:
+  compile: 
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Copy makefile config
+        run: cp Makefile.config.tpl Makefile.config
+
+      - name: Build binary
+        run: make bin
+
+      - name: Upload compiled bin artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: compiled-bin
+          path: bin
+          if-no-files-found: error
+
   benchmark:
+    needs: compile
     runs-on: self-hosted
     steps:
-        - name: Checkout repository
-          uses: actions/checkout@v4
+        - uses: actions/checkout@v3
+
+        - name: Download compiled bin artifact
+          uses: actions/download-artifact@v4
+          with:
+            name: compiled-bin
+            path: _compiled_bin
+
+        - name: Replace bin directory with compiled artifact
+          run: |
+            rm -rf bin
+            mv _compiled_bin bin
+            chmod +x bin/* || true
 
         - name: Clone PDDL data repository
-          run: git clone https://gitlab.com/danfis/pddl-data
+          run: |
+            if [ ! -d "pddl-data" ]; then
+              git clone https://gitlab.com/danfis/pddl-data
+            fi
 
         - name: Set up Python
           uses: actions/setup-python@v4
@@ -24,27 +56,17 @@ jobs:
         - name: Install dependencies
           run: |
             python -m pip install --upgrade pip
-            pip install -r requirements.txt
-
-        - name: Download latest release of CPDDL-mirror
-          run: |
-            if [ -d "pddl" ]; then mv pddl pddl_src; fi
-            
-            curl -sL https://api.github.com/repos/P6-2CANE/CPDDL-mirror/releases/latest | grep "browser_download_url" | cut -d '"' -f 4 | xargs -n 1 curl -LO
-            
-            chmod +x pddl
+            pip install -r .github/scripts/requirements.txt
 
         - name: Run benchmarks
           env:
             DISCORD_INFO_WEBHOOK: ${{ secrets.DISCORD_INFO_WEBHOOK }}
             DISCORD_ALERT_WEBHOOK: ${{ secrets.DISCORD_ALERT_WEBHOOK }}
             DISCORD_OVERVIEW_WEBHOOK: ${{ secrets.DISCORD_OVERVIEW_WEBHOOK }}
-          run: python3 benchy.py
+          run: python3 .github/scripts/benchy.py --all
 
         - name: Clean up
           if: always()
           run: |
             echo "Cleaning up..."
-            rm -rf pddl-data
-            # Optional: Clean up the downloaded binary so the runner stays tidy
-            rm -f pddl
+            find "$GITHUB_WORKSPACE" -mindepth 1 -maxdepth 1 ! -name ".git" ! -name "pddl-data" -exec rm -rf {} +
