@@ -14,35 +14,44 @@ void printHeurH1Struct(pddl_heur_h1_t *h, pddl_err_t *err);
 /* Free the memory of the h object as well as the memory of its pointers */
 static void heurDel(pddl_heur_t *_h) {
     pddl_heur_h1_t *h = pddl_container_of(_h, pddl_heur_h1_t, heur); /* Find the container/place in memory where h is stored */
-    //_pddlHeurFree(&h->heur); /* Empty function???? */
+    _pddlHeurFree(&h->heur); /* Empty function???? */
     pddlFDRVarsFree(&h->fdr_vars); /* Free the memory of the fdr variable fields that are pointers */
     pddlH1Free(&h->h1); /* Free the memory of the fields in the h1 object that are pointers */
     FREE(h); /* Free the memory of the h object */
+}
+
+static int heurEstimate(pddl_heur_t *_h,
+                        const pddl_fdr_state_space_node_t *node,
+                        const pddl_fdr_state_space_t *state_space)
+{
+    pddl_heur_h1_t *h = pddl_container_of(_h, pddl_heur_h1_t, heur);
+    return pddlH_1(&h->h1, node->state, &h->fdr_vars);
 }
 
 pddl_heur_t *pddlHeurH1(const pddl_fdr_t *fdr, pddl_err_t *err){
 
     //initialise the h1 heuristic object
     pddl_heur_h1_t *h = ZALLOC(pddl_heur_h1_t);
-    PDDL_LOG(err, "Before initializing h1 heuristic:\n");
-    printHeurH1Struct(h, err);
+    //PDDL_LOG(err, "Before initializing h1 heuristic:\n");
+    //printHeurH1Struct(h, err);
 
     /* Initalise the heuristic object with facts and operators from the fdr */
     pddlH1Init(&h->h1, fdr);
-    PDDL_LOG(err,"After initializing h1 heuristic:\n");
-    printHeurH1Struct(h, err);
+    //PDDL_LOG(err,"After initializing h1 heuristic:\n");
+    //printHeurH1Struct(h, err);
     
     /* Copy the variables from the fdr into the heuristic object */
     pddlFDRVarsInitCopy(&h->fdr_vars, &fdr->var);
-    PDDL_LOG(err,"Initialized h1 heuristic with %d facts and %d operators\n", h->h1.fact_size, h->h1.op_size);
+    //PDDL_LOG(err,"Initialized h1 heuristic with %d facts and %d operators\n", h->h1.fact_size, h->h1.op_size);
     
-    PDDL_LOG(err,"Efter frigjort h1 heuristik\n");
-    FREE(h);
-    printHeurH1Struct(h, err);
+    //PDDL_LOG(err,"Efter frigjort h1 heuristik\n");
+    //printHeurH1Struct(h, err);
 
-    PDDL_LOG(err,"FDR vars:\n");
+    _pddlHeurInit(&h->heur, heurDel, heurEstimate);
 
-    return NULL;
+    //PDDL_LOG(err,"FDR vars:\n");
+
+    return &h->heur;
 }
 
 

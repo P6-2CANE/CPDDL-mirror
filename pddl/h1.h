@@ -44,6 +44,9 @@ typedef struct pddl_h1 {
 /****************** Function declarations ******************/
 void pddlH1Init(pddl_h1_t *h, const pddl_fdr_t *fdr);
 void pddlH1Free(pddl_h1_t *h1);
+int pddlH_1(pddl_h1_t *h,
+           const int *s,
+           const pddl_fdr_vars_t *vars);
 
 #ifdef __cplusplus
 } /* extern "C" */
