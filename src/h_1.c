@@ -68,28 +68,32 @@ void pddlH1Init(pddl_h1_t *h, const pddl_fdr_t *fdr) {
             pddlISetAdd(&h->fact[fact].pre_op, op_id); /* Insert id of operator into fact, maybe: make link between fact and operator */
         op->pre_size = pddlISetSize(&pre); /* Set size/number of facts in precondition */
 
-        // Record operator with no preconditions, therefore this operator can always be applied
+        /* If the operator has no preconditions, associate it with the "nopre" fact we initialised earlier.
+            This fact explicitly represents a lack of preconditions */
         if (op->pre_size == 0){ 
-            /* if operator has no preconditions, set this operator to the fact with empty precondition */
+            // Add operator to nopre's set of operators who have it as a precondition
             pddlISetAdd(&h->fact[h->fact_nopre].pre_op, op_id);
-            /* the precondition size is 1, since we need to explicitly include a fact that represents that there are no preconditions */
+            /* Operator now technically has one precondition */
             op->pre_size = 1;
         }
     }
 
-    // Set up goal operator
-    pddl_h1_op_t *op = h->op + h->op_goal;
-    pddlISetAdd(&op->eff, h->fact_goal);
-    op->cost = 0;
+    /* Lastly, we initialize fact_goal and op_goal, which mark that a goal state has been achieved.
+    The operator op_goal has all the actual goal facts from FDR as its preconditions,
+    applying it costs nothing, and the effect is the artificial goal_fact.
+    In this way, a single fact can represent that all goal facts were indeed achieved.*/
+    pddl_h1_op_t *op = h->op + h->op_goal; // Pointer to op_goal
+    pddlISetAdd(&op->eff, h->fact_goal); // Set its effect to fact_goal
+    op->cost = 0; // This operator should not cost anything as it is artificially inserted
 
-    pddlISetEmpty(&pre);
-    pddlFDRPartStateToGlobalIDs(&fdr->goal, &fdr->var, &pre);
+    pddlISetEmpty(&pre); // Empty the set of preconditions used earlier (so we can reuse it)
+    pddlFDRPartStateToGlobalIDs(&fdr->goal, &fdr->var, &pre); // Store all goal facts from FDR in pre
     int fact;
-    PDDL_ISET_FOR_EACH(&pre, fact)
-        pddlISetAdd(&h->fact[fact].pre_op, h->op_goal);
-    op->pre_size = pddlISetSize(&pre);
+    PDDL_ISET_FOR_EACH(&pre, fact) // For each of the facts in pre
+        pddlISetAdd(&h->fact[fact].pre_op, h->op_goal); // Add them to the preconditions of op_goal
+    op->pre_size = pddlISetSize(&pre); // Update the size of the preconditions in op_goal to match
 
-    pddlISetFree(&pre);
+    pddlISetFree(&pre); // Free memory from pre as we are now done with it
 }
 
 /* Initially mark all facts as dead ends */
