@@ -11,10 +11,19 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
+      - name: Restore bin cache
+        id: cache-bin
+        uses: actions/cache@v4
+        with:
+          path: bin
+          key: bin-${{ runner.os }}-${{ hashFiles('src/**', 'pddl/**', '*') }}
+
       - name: Copy makefile config
+        if: steps.cache-bin.outputs.cache-hit != 'true'
         run: cp Makefile.config.tpl Makefile.config
 
       - name: Build binary
+        if: steps.cache-bin.outputs.cache-hit != 'true'
         run: make bin
 
       - name: Upload compiled bin artifact
@@ -63,6 +72,10 @@ jobs:
             DISCORD_INFO_WEBHOOK: ${{ secrets.DISCORD_INFO_WEBHOOK }}
             DISCORD_ALERT_WEBHOOK: ${{ secrets.DISCORD_ALERT_WEBHOOK }}
             DISCORD_OVERVIEW_WEBHOOK: ${{ secrets.DISCORD_OVERVIEW_WEBHOOK }}
+            SLURM_PARTITION: l4
+            BENCHY_TIME_LIMIT: "300"
+            BENCHY_MEMORY_LIMIT: "8192"
+            BENCHY_CPU_PER_TASK: "1"
           run: python3 .github/scripts/benchy.py --all
 
         - name: Clean up
