@@ -10,7 +10,7 @@ from report_prettifier import style_all_generated_reports
 
 from downward import suites
 from downward.reports.absolute import AbsoluteReport
-from lab.environments import BaselSlurmEnvironment
+from lab.environments import SlurmEnvironment
 from lab.experiment import Experiment
 from lab.reports import Attribute, geometric_mean
 
@@ -23,9 +23,11 @@ OVERVIEW_SECRET = os.getenv("DISCORD_OVERVIEW_WEBHOOK")
 
 
 
-TIME_LIMIT = 300
-MEMORY_LIMIT = 8 * 1024
-CPU_PER_TASK = 1
+TIME_LIMIT = int(os.getenv("BENCHY_TIME_LIMIT", "300"))
+MEMORY_LIMIT = int(os.getenv("BENCHY_MEMORY_LIMIT", str(8 * 1024)))
+CPU_PER_TASK = int(os.getenv("BENCHY_CPU_PER_TASK", "1"))
+SLURM_PARTITION = os.getenv("SLURM_PARTITION", "l4")
+SLURM_QOS = os.getenv("SLURM_QOS")
 
 SUITES = [
     "barman14:p435.1.pddl",
@@ -157,9 +159,20 @@ class BenchyRunner:
                 "Slurm is required, but sbatch is not available on PATH."
             )
 
-        self.env = BaselSlurmEnvironment(
-            email="dz30ed@student.aau.dk",
-        )
+        env_kwargs = {
+            "partition": SLURM_PARTITION,
+            "email": "dz30ed@student.aau.dk",
+            "memory_per_cpu": f"{self.memory_limit}M",
+            "cpus_per_task": self.cpu_per_task,
+        }
+        if SLURM_QOS:
+            env_kwargs["qos"] = SLURM_QOS
+        self.env = SlurmEnvironment(**env_kwargs)
+        
+        if not SLURM_QOS:
+            self.env.qos = None 
+
+        self.suites = SUITES
 
         self.suites = SUITES
         self.algorithms = ALGORITHMS
