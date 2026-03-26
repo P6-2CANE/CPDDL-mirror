@@ -7,10 +7,10 @@
 #define FVALUE(fact) (fact)->heap.key
 //Set value of fact in the heap to 'val' parameter
 #define FVALUE_SET(fact, val) do { (fact)->heap.key = val; } while(0)
-//Initialize fact to the maximum allowed integer value (mark as dead end)
-#define FVALUE_INIT(fact) FVALUE_SET((fact), INT_MAX)
+//Initialize fact to dead end
+#define FVALUE_INIT(fact) FVALUE_SET((fact), PDDL_COST_DEAD_END)
 //Check if fact has been set to value other than dead end
-#define FVALUE_IS_SET(fact) (FVALUE(fact) != INT_MAX)
+#define FVALUE_IS_SET(fact) (FVALUE(fact) != PDDL_COST_DEAD_END)
 
 //Push fact onto priority queue C (or simply update if it was already set)
 #define FPUSH(C, val, fact) \
@@ -186,11 +186,9 @@ int pddlH_1(pddl_h1_t *h,
     //The h-value has been computed and is stored in the heap, so we can free memory from the queue
     pddlPQFree(&C);
 
-    //Initially assume the h-value is infinite (dead end)
-    int heur = PDDL_COST_DEAD_END;
-    //If there is an h-value for reaching the goal, update to this value
+    //Return the computed h-value, or dead end value if no path was found
     if (FVALUE_IS_SET(h->fact + h->fact_goal))
-        heur = FVALUE(h->fact + h->fact_goal);
-    //Finally return the fully computed heuristic value
-    return heur;
+        return FVALUE(h->fact + h->fact_goal);
+    else 
+        return PDDL_COST_DEAD_END;
 }
