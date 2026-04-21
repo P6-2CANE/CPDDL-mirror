@@ -1,0 +1,212 @@
+[0.000s 3MB] Version: 1.5-0ae3c7544e81e245a613deddf4595c14cadfad9d
+[0.000s 3MB] PDDL: BEGIN
+[0.000s 3MB] PDDL: Cfg: force_adl = true
+[0.000s 3MB] PDDL: Cfg: normalize = true
+[0.000s 3MB] PDDL: Cfg: normalize_compile_away_dynamic_neg_cond = true
+[0.000s 3MB] PDDL: Cfg: normalize_compile_away_only_goal_neg_cond = false
+[0.000s 3MB] PDDL: Cfg: normalize_compile_away_all_neg_cond = false
+[0.000s 3MB] PDDL: Cfg: normalize_compile_away_neg_cond_only_relevant_facts = true
+[0.000s 3MB] PDDL: Cfg: remove_empty_types = true
+[0.000s 3MB] PDDL: Cfg: compile_away_cond_eff = false
+[0.000s 3MB] PDDL: Cfg: compile_away_disjunctive_goals = false
+[0.000s 3MB] PDDL: Cfg: enforce_unit_cost = false
+[0.000s 3MB] PDDL: Cfg: keep_all_actions = false
+[0.000s 3MB] PDDL: Processing ../pddl-data/bench/ipc-opt-noce/barman14/domain.pddl and ../pddl-data/bench/ipc-opt-noce/barman14/p435.2.pddl.
+[0.000s 3MB] PDDL: Parse Domain: BEGIN
+[0.000s 3MB] PDDL: Parse Domain: Parsing domain file ../pddl-data/bench/ipc-opt-noce/barman14/domain.pddl
+[0.000s 3MB] PDDL: Parse Domain: TOK: BEGIN
+[0.000s 3MB] PDDL: Parse Domain: TOK: mmaped 5487 bytes from file /home/apollo/Documents/school/P6/pddl-data/ipc-2014/seq-opt/barman/domain.pddl
+[0.000s 3MB] PDDL: Parse Domain: TOK: File /home/apollo/Documents/school/P6/pddl-data/ipc-2014/seq-opt/barman/domain.pddl tokenized. tokens: 977, strings: 68
+[0.000s 3MB] PDDL: Parse Domain: TOK: END elapsed time: 0.000
+[0.000s 3MB] PDDL: Parse Domain: Parsing domain...
+[0.000s 3MB] PDDL: Parse Domain: Parsing :requirements...
+[0.000s 3MB] PDDL: Parse Domain: Parsing :types...
+[0.000s 3MB] PDDL: Parse Domain: Parsing :constants...
+[0.000s 3MB] PDDL: Parse Domain: Missing (:constants ...) section.
+[0.000s 3MB] PDDL: Parse Domain: Parsing :predicates...
+[0.000s 3MB] PDDL: Parse Domain: Parsing :functions...
+[0.000s 3MB] PDDL: Parse Domain: Missing (:functions ...) section.
+[0.000s 3MB] PDDL: Parse Domain: Parsing actions...
+[0.000s 3MB] PDDL: Parse Domain: Parsed 12 :action sections
+[0.000s 3MB] PDDL: Parse Domain: Parsing axioms...
+[0.000s 3MB] PDDL: Parse Domain: Parsed 0 :derived sections
+[0.000s 3MB] PDDL: Parse Domain: END elapsed time: 0.000
+[0.000s 3MB] PDDL: Parse Problem: BEGIN
+[0.000s 3MB] PDDL: Parse Problem: Parsing problem file ../pddl-data/bench/ipc-opt-noce/barman14/p435.2.pddl
+[0.000s 3MB] PDDL: Parse Problem: TOK: BEGIN
+[0.000s 3MB] PDDL: Parse Problem: TOK: mmaped 1262 bytes from file /home/apollo/Documents/school/P6/pddl-data/ipc-2014/seq-opt/barman/p435.2.pddl
+[0.001s 3MB] PDDL: Parse Problem: TOK: File /home/apollo/Documents/school/P6/pddl-data/ipc-2014/seq-opt/barman/p435.2.pddl tokenized. tokens: 218, strings: 51
+[0.001s 3MB] PDDL: Parse Problem: TOK: END elapsed time: 0.000
+[0.001s 3MB] PDDL: Parse Problem: Parsing problem...
+[0.001s 3MB] PDDL: Parse Problem: Parsing :domain...
+[0.001s 3MB] PDDL: Parse Problem: Parsing :objects...
+[0.001s 3MB] PDDL: Parse Problem: Parsing :init...
+[0.001s 3MB] PDDL: Parse Problem: Parsing :goal...
+[0.001s 3MB] PDDL: Parse Problem: Parsing :metric...
+[0.001s 3MB] PDDL: Parse Problem: Missing (:metric ...) section.
+[0.001s 3MB] PDDL: Parse Problem: END elapsed time: 0.000
+[0.001s 3MB] PDDL: PDDL-Norm: BEGIN
+[0.001s 3MB] PDDL: PDDL-Norm: Before normalization: types: 10, objects: 21, predicates: 16, functions: 0, actions: 12, action-pre-size: [min: 7, max: 2, avg: 4.33, med: 5.00]
+[0.001s 3MB] PDDL: PDDL-Norm: Removed actions with unsatisfiable parameters: types: 10, objects: 21, predicates: 16, functions: 0, actions: 12, action-pre-size: [min: 7, max: 2, avg: 4.33, med: 5.00]
+[0.001s 3MB] PDDL: PDDL-Norm: Actions normalized: types: 10, objects: 21, predicates: 16, functions: 0, actions: 12, action-pre-size: [min: 7, max: 2, avg: 4.33, med: 5.00]
+[0.001s 3MB] PDDL: PDDL-Norm: Actions split: types: 10, objects: 21, predicates: 16, functions: 0, actions: 12, action-pre-size: [min: 7, max: 2, avg: 4.33, med: 5.00]
+[0.001s 3MB] PDDL: PDDL-Norm: Neg-Cond: BEGIN
+[0.001s 3MB] PDDL: PDDL-Norm: Neg-Cond: Cfg: only_dynamic: true
+[0.001s 3MB] PDDL: PDDL-Norm: Neg-Cond: Cfg: only_goal: false
+[0.001s 3MB] PDDL: PDDL-Norm: Neg-Cond: Cfg: only_relevant_facts_in_init: true
+[0.001s 3MB] PDDL: PDDL-Norm: Neg-Cond: No negative conditions.
+[0.001s 3MB] PDDL: PDDL-Norm: Neg-Cond: END elapsed time: 0.000
+[0.001s 3MB] PDDL: PDDL-Norm: Removed irrelevant/unreachable predicates/functions/actions: types: 10, objects: 21, predicates: 16, functions: 0, actions: 12, action-pre-size: [min: 7, max: 2, avg: 4.33, med: 5.00]
+[0.001s 3MB] PDDL: PDDL-Norm: PDDL task normalized. types: 10, objects: 21, predicates: 16, functions: 0, actions: 12, action-pre-size: [min: 7, max: 2, avg: 4.33, med: 5.00]
+[0.001s 3MB] PDDL: PDDL-Norm: END elapsed time: 0.000
+[0.001s 3MB] PDDL: PDDL rm empty-types: BEGIN
+[0.001s 3MB] PDDL: PDDL rm empty-types: Removed 0 empty types
+[0.001s 3MB] PDDL: PDDL rm empty-types: END elapsed time: 0.000
+[0.001s 3MB] PDDL: PDDL-Norm: BEGIN
+[0.001s 3MB] PDDL: PDDL-Norm: Before normalization: types: 10, objects: 21, predicates: 16, functions: 0, actions: 12, action-pre-size: [min: 7, max: 2, avg: 4.33, med: 5.00]
+[0.001s 3MB] PDDL: PDDL-Norm: Removed actions with unsatisfiable parameters: types: 10, objects: 21, predicates: 16, functions: 0, actions: 12, action-pre-size: [min: 7, max: 2, avg: 4.33, med: 5.00]
+[0.001s 3MB] PDDL: PDDL-Norm: Actions normalized: types: 10, objects: 21, predicates: 16, functions: 0, actions: 12, action-pre-size: [min: 7, max: 2, avg: 4.33, med: 5.00]
+[0.001s 3MB] PDDL: PDDL-Norm: Actions split: types: 10, objects: 21, predicates: 16, functions: 0, actions: 12, action-pre-size: [min: 7, max: 2, avg: 4.33, med: 5.00]
+[0.001s 3MB] PDDL: PDDL-Norm: Neg-Cond: BEGIN
+[0.001s 3MB] PDDL: PDDL-Norm: Neg-Cond: Cfg: only_dynamic: true
+[0.001s 3MB] PDDL: PDDL-Norm: Neg-Cond: Cfg: only_goal: false
+[0.001s 3MB] PDDL: PDDL-Norm: Neg-Cond: Cfg: only_relevant_facts_in_init: true
+[0.001s 3MB] PDDL: PDDL-Norm: Neg-Cond: No negative conditions.
+[0.001s 3MB] PDDL: PDDL-Norm: Neg-Cond: END elapsed time: 0.000
+[0.001s 3MB] PDDL: PDDL-Norm: Removed irrelevant/unreachable predicates/functions/actions: types: 10, objects: 21, predicates: 16, functions: 0, actions: 12, action-pre-size: [min: 7, max: 2, avg: 4.33, med: 5.00]
+[0.001s 3MB] PDDL: PDDL-Norm: PDDL task normalized. types: 10, objects: 21, predicates: 16, functions: 0, actions: 12, action-pre-size: [min: 7, max: 2, avg: 4.33, med: 5.00]
+[0.001s 3MB] PDDL: PDDL-Norm: END elapsed time: 0.000
+[0.001s 3MB] PDDL: Number of PDDL Types: 10
+[0.001s 3MB] PDDL: Number of PDDL Objects: 21
+[0.001s 3MB] PDDL: Number of PDDL Predicates: 16
+[0.001s 3MB] PDDL: Number of PDDL Functions: 0
+[0.001s 3MB] PDDL: Number of PDDL Actions: 12
+[0.001s 3MB] PDDL: PDDL Metric: false
+[0.001s 3MB] PDDL: END elapsed time: 0.001
+[0.001s 3MB] LMG: BEGIN
+[0.001s 3MB] LMG: Cfg: max_candidates = 10000
+[0.001s 3MB] LMG: Cfg: max_mgroups = 10000
+[0.001s 3MB] LMG: Cfg: fd = false
+[0.001s 3MB] LMG: Cfg: fd_monotonicity = false
+[0.001s 3MB] LMG: LMG-FAM-Group: BEGIN
+[0.001s 3MB] LMG: LMG-FAM-Group: limit.max_candidates = 10000
+[0.001s 3MB] LMG: LMG-FAM-Group: limit.max_mgroups = 10000
+[0.001s 3MB] LMG: LMG-FAM-Group: Inference of lifted fam-groups ...
+[0.001s 3MB] LMG: LMG-FAM-Group:   10 initial candidates.
+[0.002s 3MB] LMG: LMG-FAM-Group: Tested candidates: 379, Num candidates: 379, Proved: 25
+[0.002s 3MB] LMG: LMG-FAM-Group: Inference of lifted fam-groups done. Found mutex groups: 11
+[0.002s 3MB] LMG: LMG-FAM-Group: END elapsed time: 0.001
+[0.002s 3MB] LMG: LMG-Set-Exactly-One: BEGIN
+[0.002s 3MB] LMG: LMG-Set-Exactly-One: Looking for exactly-one lifted mgroups ...
+[0.002s 3MB] LMG: LMG-Set-Exactly-One: Found 8 exactly-one lifted mgroups.
+[0.002s 3MB] LMG: LMG-Set-Exactly-One: END elapsed time: 0.000
+[0.002s 3MB] LMG: LMG-Set-Static: BEGIN
+[0.002s 3MB] LMG: LMG-Set-Static: Looking for static lifted mgroups ...
+[0.002s 3MB] LMG: LMG-Set-Static: Found 0 static lifted mgroups.
+[0.002s 3MB] LMG: LMG-Set-Static: END elapsed time: 0.000
+[0.002s 3MB] LMG: END elapsed time: 0.001
+[0.002s 3MB] Lifted endomorphisms disabled
+[0.002s 3MB] GR: BEGIN
+[0.002s 3MB] GR: Cfg: method = datalog
+[0.002s 3MB] GR: Cfg: lifted_mgroups->mgroup_size = 11
+[0.002s 3MB] GR: Cfg: prune_op_pre_mutex = true
+[0.002s 3MB] GR: Cfg: prune_op_dead_end = true
+[0.002s 3MB] GR: Cfg: remove_static_facts = true
+[0.002s 3MB] GR: Cfg: keep_action_args = false
+[0.002s 3MB] GR: Cfg: keep_all_static_facts = false
+[0.002s 3MB] GR: Cfg: ground_only_facts = false
+[0.002s 3MB] GR: Cfg: gringo_lpopt = (null)
+[0.002s 3MB] GR: Ground DL: BEGIN
+[0.002s 3MB] GR: Ground DL: Cfg: method = datalog
+[0.002s 3MB] GR: Ground DL: Cfg: lifted_mgroups->mgroup_size = 11
+[0.002s 3MB] GR: Ground DL: Cfg: prune_op_pre_mutex = true
+[0.002s 3MB] GR: Ground DL: Cfg: prune_op_dead_end = true
+[0.002s 3MB] GR: Ground DL: Cfg: remove_static_facts = true
+[0.002s 3MB] GR: Ground DL: Cfg: keep_action_args = false
+[0.002s 3MB] GR: Ground DL: Cfg: keep_all_static_facts = false
+[0.002s 3MB] GR: Ground DL: Cfg: ground_only_facts = false
+[0.002s 3MB] GR: Ground DL: Cfg: gringo_lpopt = (null)
+[0.002s 3MB] GR: Ground DL: Grounding using datalog ...
+[0.002s 3MB] GR: Ground DL: DL Normal form: BEGIN
+[0.002s 3MB] GR: Ground DL: DL Normal form: Normal form of the datalog program start (consts: 21, vars: 6, predicates: 32, rules: 103)
+[0.003s 3MB] GR: Ground DL: DL Normal form: reduce-rule-set: Remapping 1 predicates and removing 1 rules
+[0.003s 3MB] GR: Ground DL: DL Normal form: reduce-rule-set: Remapping 1 predicates and removing 1 rules
+[0.003s 3MB] GR: Ground DL: DL Normal form: reduce-rule-set: Remapping 2 predicates and removing 2 rules
+[0.003s 3MB] GR: Ground DL: DL Normal form: reduce-rule-set: Remapping 1 predicates and removing 1 rules
+[0.003s 3MB] GR: Ground DL: DL Normal form: reduce-rule-set: Remapping 1 predicates and removing 1 rules
+[0.003s 3MB] GR: Ground DL: DL Normal form: reduce-rule-set: Remapping 1 predicates and removing 1 rules
+[0.003s 3MB] GR: Ground DL: DL Normal form: reduce-rule-set: Remapping 1 predicates and removing 1 rules
+[0.003s 3MB] GR: Ground DL: DL Normal form: reduce-rule-set: Remapping 1 predicates and removing 1 rules
+[0.003s 3MB] GR: Ground DL: DL Normal form: reduce-rule-set: Nothing to reduce
+[0.003s 3MB] GR: Ground DL: DL Normal form: Normal form of the datalog program DONE (consts: 21, vars: 6, predicates: 72, rules: 134)
+[0.003s 3MB] GR: Ground DL: DL Normal form: END elapsed time: 0.000
+[0.003s 3MB] GR: Ground DL: DL Canonical Model: BEGIN
+[0.003s 3MB] GR: Ground DL: DL Canonical Model: start (consts: 21, vars: 6, predicates: 72, rules: 134)
+[0.003s 3MB] GR: Ground DL: DL Canonical Model: Added initial facts: 69
+[0.003s 3MB] GR: Ground DL: DL Canonical Model: DONE (facts: 1346, db-mem: 0MB)
+[0.003s 3MB] GR: Ground DL: DL Canonical Model: END elapsed time: 0.001
+[0.003s 3MB] GR: Ground DL: Grounding finished: 578 actions, 94 facts, 14 static facts, 0 functions
+[0.003s 3MB] GR: Ground DL: Strips Maker: BEGIN
+[0.003s 3MB] GR: Ground DL: Strips Maker: Created 94 STRIPS facts
+[0.003s 3MB] GR: Ground DL: Strips Maker: Created init state consisting of 21 facts
+[0.003s 3MB] GR: Ground DL: Strips Maker: Goal created consisting of 1 facts
+[0.004s 3MB] GR: Ground DL: Strips Maker: Operators sorted.
+[0.004s 3MB] GR: Ground DL: Strips Maker: Created 578 operators
+[0.004s 3MB] GR: Ground DL: Strips Maker: Found 0 static facts
+[0.004s 3MB] GR: Ground DL: Strips Maker: Merged conditional effects where possible.
+[0.004s 3MB] GR: Ground DL: Strips Maker: Operators deduplicated. Num operators: 578
+[0.004s 3MB] GR: Ground DL: Strips Maker: Number of Strips Operators: 578
+[0.004s 3MB] GR: Ground DL: Strips Maker: Number of Strips Facts: 94
+[0.004s 3MB] GR: Ground DL: Strips Maker: Number of Strips Operators with Conditional Effects: 0
+[0.004s 3MB] GR: Ground DL: Strips Maker: Goal is unreachable: 0
+[0.004s 3MB] GR: Ground DL: Strips Maker: Has Conditional Effects: 0
+[0.004s 3MB] GR: Ground DL: Strips Maker: PDDL grounded to STRIPS.
+[0.004s 3MB] GR: Ground DL: Strips Maker: END elapsed time: 0.001
+[0.004s 3MB] GR: Ground DL: Grounding finished.
+[0.004s 3MB] GR: Ground DL: Number of Strips Operators: 578
+[0.004s 3MB] GR: Ground DL: Number of Strips Facts: 94
+[0.004s 3MB] GR: Ground DL: Goal is unreachable: 0
+[0.004s 3MB] GR: Ground DL: Has Conditional Effects: 0
+[0.004s 3MB] GR: Ground DL: Number of Strips Operators with Conditional Effects: 0
+[0.004s 3MB] GR: Ground DL: END elapsed time: 0.002
+[0.004s 3MB] GR: END elapsed time: 0.002
+[0.004s 3MB] Ground LMG: BEGIN
+[0.004s 3MB] Ground LMG: Grounding of lifted mutex groups ...
+[0.005s 3MB] Ground LMG: Found 21 mutex groups
+[0.005s 3MB] Ground LMG: Found 330 mutex pairs
+[0.005s 3MB] Ground LMG: END elapsed time: 0.000
+[0.005s 3MB] Inference of mutex groups disabled.
+[0.005s 3MB] STRIPS-P: BEGIN
+[0.005s 3MB] STRIPS-P: Removed 0 facts, 0 operators
+[0.005s 3MB] STRIPS-P: Number of Strips Operators: 578
+[0.005s 3MB] STRIPS-P: Number of Strips Facts: 94
+[0.005s 3MB] STRIPS-P: Goal is unreachable: 0
+[0.005s 3MB] STRIPS-P: Has Conditional Effects: 0
+[0.005s 3MB] STRIPS-P: Number of Strips Operators with Conditional Effects: 0
+[0.005s 3MB] STRIPS-P: END elapsed time: 0.000
+[0.005s 3MB] FDR: BEGIN
+[0.005s 3MB] FDR: Cfg: var: alg = largest-first
+[0.005s 3MB] FDR: Cfg: var: ignore_negated_facts = false
+[0.005s 3MB] FDR: Cfg: set_none_of_those_in_pre = false
+[0.005s 3MB] FDR: Created 25 variables.
+[0.005s 3MB] FDR: Created 115 facts.
+[0.005s 3MB] FDR: Created 21 none-of-those values.
+[0.005s 3MB] FDR: Created initial state.
+[0.005s 3MB] FDR: Created goal specification.
+[0.005s 3MB] FDR: Created 478 operators
+[0.005s 3MB] FDR: Created 0 operators with conditional effects
+[0.005s 3MB] FDR: Translation took 0.00 seconds
+[0.005s 3MB] FDR: END elapsed time: 0.000
+[0.005s 3MB] FDR variables reordered using causal graph.
+[0.005s 3MB] GPLAN: BEGIN
+[0.005s 3MB] GPLAN: Heuristic: hmax
+[0.005s 3MB] GPLAN: Search: astar
+[0.005s 3MB] GPLAN: State pool created. bytes per state: 8
+[0.005s 3MB] GPLAN: State space created. bytes per state node: 12
+[0.007s 5MB] GPLAN: A*: Heuristic value for the initial state: 5
+[0.034s 12MB] GPLAN: A*: Found goal state. g: 10, f: 10, h: 0
+[0.034s 12MB] GPLAN: Search steps: 1249, expand: 1248, expand-blfl: 1238, eval: 4993, gen: 4993, open: 3714, closed: 1279, reopen: 0, de: 30, de-blfl: 30, f: 10
+[0.034s 12MB] GPLAN: Plan found.
+[0.034s 12MB] GPLAN: Plan Cost: 10
+[0.034s 12MB] GPLAN: Plan Length: 10
+[0.035s 12MB] GPLAN: Overall Elapsed Time: 0.0349s
