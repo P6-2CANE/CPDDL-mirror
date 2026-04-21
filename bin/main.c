@@ -1048,6 +1048,10 @@ static int stepGroundPlanner(void)
             heur_cfg.heur = PDDL_HEUR_HMAX;
             PDDL_LOG(&err, "Heuristic: hmax");
             break;
+        case GROUND_PLAN_HEUR_1:
+            heur_cfg.heur = PDDL_HEUR_H1;
+            PDDL_LOG(&err, "Heuristic: h1");
+            break;
         case GROUND_PLAN_HEUR_ADD:
             heur_cfg.heur = PDDL_HEUR_HADD;
             PDDL_LOG(&err, "Heuristic: hadd");

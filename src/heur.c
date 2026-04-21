@@ -98,6 +98,8 @@ pddl_heur_t *pddlHeur(const pddl_heur_config_t *cfg, pddl_err_t *err)
             return pddlHeurLMCut(cfg->fdr, err);
         case PDDL_HEUR_HMAX:
             return pddlHeurHMax(cfg->fdr, err);
+        case PDDL_HEUR_H1:
+            return pddlHeurH1(cfg->fdr, err);
         case PDDL_HEUR_HADD:
             return pddlHeurHAdd(cfg->fdr, err);
         case PDDL_HEUR_HFF:
