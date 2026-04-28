@@ -38,7 +38,7 @@ pddl_heur_t *pddlHeurHMax(const pddl_fdr_t *fdr, pddl_err_t *err)
 {
     pddl_heur_hmax_t *h = ZALLOC(pddl_heur_hmax_t);
     pddlHMaxInit(&h->hmax, fdr);
-    printHeurHMaxStruct(h);
+    //printHeurHMaxStruct(h);
     pddlFDRVarsInitCopy(&h->fdr_vars, &fdr->var);
     _pddlHeurInit(&h->heur, heurDel, heurEstimate);
     return &h->heur;
