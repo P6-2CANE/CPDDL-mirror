@@ -140,7 +140,6 @@ pddl_heur_t *pddlHeurH1(const pddl_fdr_t *fdr, pddl_err_t *err);
  */
 pddl_heur_t *pddlHeurH2(const pddl_fdr_t *fdr, pddl_err_t *err);
 
-
 /**
  * h^add heuristic
  */

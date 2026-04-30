@@ -23,11 +23,11 @@
     } while (0)
 
 
-void pddlh2Free(pddl_h2_t *h2) {
+void pddlH2Free(pddl_h2_t *h2) {
     return;
 }
 
-void pddlh2Init(pddl_h2_t *h, const pddl_fdr_t *fdr) {
+void pddlH2Init(pddl_h2_t *h, const pddl_fdr_t *fdr) {
     return;
 }
 
@@ -53,7 +53,7 @@ static void enqueueOpEffects(pddl_h2_t *h,
     return;
 }
 
-int pddlH_1(pddl_h2_t *h,
+int pddlH_2(pddl_h2_t *h,
                   const int *s,
                   const pddl_fdr_vars_t *vars) {
     return 0;
