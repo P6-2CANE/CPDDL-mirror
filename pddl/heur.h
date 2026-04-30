@@ -28,6 +28,7 @@ enum pddl_heur_type {
     PDDL_HEUR_LM_CUT,
     PDDL_HEUR_HMAX,
     PDDL_HEUR_H1,
+    PDDL_HEUR_H2,
     PDDL_HEUR_HADD,
     PDDL_HEUR_HFF,
     PDDL_HEUR_OP_MUTEX,
@@ -133,6 +134,12 @@ pddl_heur_t *pddlHeurHMax(const pddl_fdr_t *fdr, pddl_err_t *err);
  * h^1 heuristic
  */
 pddl_heur_t *pddlHeurH1(const pddl_fdr_t *fdr, pddl_err_t *err);
+
+/**
+ * h^2 heuristic
+ */
+pddl_heur_t *pddlHeurH2(const pddl_fdr_t *fdr, pddl_err_t *err);
+
 
 /**
  * h^add heuristic
