@@ -23,8 +23,7 @@ typedef struct pddl_h2_op {
     int cost;       /* Cost of the operator */
     int pre_size;   /* Number of preconditions */
     int unsat;      /* Number of unsatisfied preconditions */
-    pddl_iset_t pfact /* Set of persistant facts */
-
+    pddl_iset_t pfact; /* Set of persistant facts */
 } pddl_h2_op_t;
 
 typedef struct pddl_h2_fact {
