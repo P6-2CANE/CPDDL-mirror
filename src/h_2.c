@@ -119,23 +119,29 @@ static void addInitState(pddl_h2_t *h,
     FPUSH(C, 0, h->fact + h->fact_nopre);
 }
 
-static void addContext( pddl_h2_t *h,
-                        pddl_h2_op_t *op,
-                        int fid_q,
-                        int h_val,
-                        pddl_pq_t *C) {
-    int val = op->cost + h_val;
+/* Function to apply additional context (persistent/prevailing fact) to an action */
+static void addContext( pddl_h2_t *h, /* h is used for h->n */
+                        pddl_h2_op_t *op, /* the action to be applied */
+                        int fid_q, /* the id of the persistent/prevailing fact */
+                        int h_val, /* the heuristic value of the latest popped fact */
+                        pddl_pq_t *C) { /* the priority queue */
+    int val = op->cost + h_val; /* heuristic value of the new path */
     
-    int fid;
-    PDDL_ISET_FOR_EACH(&op->eff, fid) {
-        pddl_h2_fact_t *fact;
+    int fid; /* id of the facts in eff */
+    PDDL_ISET_FOR_EACH(&op->eff, fid) { /* iterating through the facts of eff */
+        pddl_h2_fact_t *fact; /* local variable to hold the fact */
 
-        if (fid < fid_q) {
+        /* finding the fact, using the ID calculated with factPair
+           factPair(x, y, n) requires that x <= y 
+           therefore we need to compare fid and fid_q in order to apply correctly. 
+        */
+        if (fid < fid_q) { 
             fact = h->fact + factPair(fid, fid_q, h->n);
         } else {
             fact = h->fact + factPair(fid_q, fid, h->n);
         }
         
+        /* If new path is cheaper push fact to priority queue with new value */
         if (FVALUE(fact) > val)
             FPUSH(C, val, fact);
     }
