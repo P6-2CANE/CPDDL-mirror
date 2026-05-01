@@ -36,9 +36,54 @@ void pddlH2Free(pddl_h2_t *h2) {
 }
 
 void pddlH2Init(pddl_h2_t *h, const pddl_fdr_t *fdr) {
-    return;
+    //Store original number of facts n from fdr
+    int n = fdr->var.global_id_size;
+    h->n = n;
+
+    //Size of facts allocated for all facts, pairs of facts and auxiliary facts
+    h->fact_size = n + factPair(n-1, n-1, n) + 2;
+    h->fact = ZALLOC_ARR(pddl_h2_fact_t, h->fact_size);
+    h->fact_goal = h->fact_size - 2;
+    h->fact_nopre = h->fact_size - 1;
+
+    //Only original operators are set up
+    h->op_size = fdr->op.op_size + 1;
+    h->op = ZALLOC_ARR(pddl_h2_op_t, h->op_size);
+    h->op_goal = h->op_size - 1;
+
+    //Empty set to hold preconditions
+    PDDL_ISET(pre);
+
+    /* Iterate through operators 'src' in the fdr and assign
+    to operators 'op' in the h2 struct */
+    for (int op_id = 0; op_id < fdr->op.op_size; ++op_id){
+        // Get pointers to src and op operators
+        const pddl_fdr_op_t *src = fdr->op.op[op_id];
+        pddl_h2_op_t *op = h->op + op_id;
+
+        // Transfer effects from src to op as fact ids
+        pddlFDRPartStateToGlobalIDs(&src->eff, &fdr->var, &op->eff);
+        // Transfer the cost of the operator
+        op->cost = src->cost;
+
+        //Empty the set of preconditions 'pre' for each iteration
+        pddlISetEmpty(&pre);
+        //Transfer preconditions from src to 'pre' set as fact ids
+        pddlFDRPartStateToGlobalIDs(&src->pre, &fdr->var, &pre);
+        
+        //For each fact in the preconditions, add the id of the current operator
+        int fact;
+        PDDL_ISET_FOR_EACH(&pre, fact)
+            pddlISetAdd(&h->fact[fact].pre_op, op_id);
+        //Set size of operator's pre_size to the number of preconditions
+        op->pre_size = pddlISetSize(&pre);
+
+        //Free up the memory of 'pre' set as it is no longer needed
+        pddlISetFree(&pre);
+    }
 }
 
+//From two fact ids, return the id representing their pair
 int factPair(int x, int y, int n) {
     return n + (x*(2*n-x-1))/2 + (y-x-1);
 }

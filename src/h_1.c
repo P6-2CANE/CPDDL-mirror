@@ -41,7 +41,7 @@ void pddlH1Free(pddl_h1_t *h1) {
 void pddlH1Init(pddl_h1_t *h, const pddl_fdr_t *fdr) {
     // Allocate facts and add one for empty-precondition fact and one for goal fact
     h->fact_size = fdr->var.global_id_size + 2; /* make space for an empty-precondition and goal fact */
-    h->fact = ZALLOC_ARR(pddl_h1_fact_t, h->fact_size); /* Allocate memory based on the updated fact size */
+    h->fact = ZALLOC_ARR(pddl_h1_fact_t, h->fact_size); /* Allocate memory based on the updated fact size, all facts are of type set (so all facts are singletons) */
     h->fact_goal = h->fact_size - 2; /* The index of the goal fact in h->fact array */
     h->fact_nopre = h->fact_size - 1; /* The index of the empty-precondition in h->fact array */
 
