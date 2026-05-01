@@ -83,9 +83,27 @@ void pddlH2Init(pddl_h2_t *h, const pddl_fdr_t *fdr) {
     }
 }
 
-//From two fact ids, return the id representing their pair
+// From two fact ids, return the id representing their pair
 int factPair(int x, int y, int n) {
-    return n + (x*(2*n-x-1))/2 + (y-x-1);
+    int id = (x*(2*n-x-1))/2;
+    id = n + id + (y-x-1);
+    return id;
+}
+
+void factPairReverse(int id, int n, pddl_iset_t *pair) {
+    // Constant k used in calculations
+    int k = id-n;
+
+    // Calculate x-value (split into steps) and add to set
+    float x_pow = pow((2*n-1),2);
+    float x_sqrt = sqrt(x_pow-8*k);
+    int x = (int) (2*n-1-x_sqrt)/2;
+    pddlISetAdd(pair, x);
+
+    // Calculate y-value (split into steps) and add to set
+    int y = (x*2*n- x - 1)/2;
+    y = x+1+k - y;
+    pddlISetAdd(pair, y);
 }
 
 static void initFacts(pddl_h2_t *h) {
