@@ -50,7 +50,11 @@ static void initFacts(pddl_h2_t *h) {
 }
 
 static void initOps(pddl_h2_t *h) {
-    return;
+    for (int i = 0; i < h->fact_size; i++){
+        int pre_size  = h->op[i].pre_size;
+        h->op[i].unsat = pre_size * (pre_size + 1)/2; // Number of all possible combinations of unsatisfied preconditions
+        pddlISetInit(&h->op[i].pfact); // Initialises the set of persistant facts to an empty set
+    }
 }
 
 static void addInitState(pddl_h2_t *h, 
