@@ -40,7 +40,9 @@ void pddlH2Init(pddl_h2_t *h, const pddl_fdr_t *fdr) {
 }
 
 static void initFacts(pddl_h2_t *h) {
-    return;
+    for (int i = 0; i < h->fact_size; i++){
+        FVALUE_INIT(h->fact + i);
+    }
 }
 
 static void initOps(pddl_h2_t *h) {
