@@ -39,6 +39,10 @@ void pddlH2Init(pddl_h2_t *h, const pddl_fdr_t *fdr) {
     return;
 }
 
+int factPair(int x, int y, int n) {
+    return n + (x*(2*n-x-1))/2 + (y-x-1);
+}
+
 static void initFacts(pddl_h2_t *h) {
     for (int i = 0; i < h->fact_size; i++){
         FVALUE_INIT(h->fact + i);
