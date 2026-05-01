@@ -50,7 +50,7 @@ void pddlH2Free(pddl_h2_t *h2);
 int pddlH_2(pddl_h2_t *h,
            const int *s,
            const pddl_fdr_vars_t *vars);
-int pairFact(int x, int y, int n);
+int factPair(int x, int y, int n);
 
 #ifdef __cplusplus
 } /* extern "C" */
