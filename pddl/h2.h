@@ -31,10 +31,11 @@ typedef struct pddl_h2_fact {
 } pddl_h2_fact_t;
 
 typedef struct pddl_h2 {
-    pddl_h2_fact_t *fact; /* Maybe: List of all facts? */
-    int fact_size; /* Maybe: How many facts in this pddl? */
-    int fact_goal; /* Maybe: Are we in goal state? */
-    int fact_nopre; /* Maybe: Does the fact have a precondition? */
+    pddl_h2_fact_t *fact; /* List of all facts and pairs of facts */
+    int fact_size; /* How many facts and pairs of facts in this problem? */
+    int n; /* How many singleton facts in the original problem? */
+    int fact_goal; /* Index in fact array of the auxiliary fact representing that the goal is reached */
+    int fact_nopre; /* Index in fact array of the auxiliary fact representing no preconditions */
 
     pddl_h2_op_t *op; /* Maybe: List of all operations? */
     int op_size; /* Maybe: How many operations in this pddl? */
