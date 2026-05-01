@@ -119,6 +119,28 @@ static void addInitState(pddl_h2_t *h,
     FPUSH(C, 0, h->fact + h->fact_nopre);
 }
 
+static void addContext( pddl_h2_t *h,
+                        pddl_h2_op_t *op,
+                        int fid_q,
+                        int h_val,
+                        pddl_pq_t *C) {
+    int val = op->cost + h_val;
+    
+    int fid;
+    PDDL_ISET_FOR_EACH(&op->eff, fid) {
+        pddl_h2_fact_t *fact;
+
+        if (fid < fid_q) {
+            fact = h->fact + factPair(fid, fid_q, h->n);
+        } else {
+            fact = h->fact + factPair(fid_q, fid, h->n);
+        }
+        
+        if (FVALUE(fact) > val)
+            FPUSH(C, val, fact);
+    }
+}
+
 static void enqueueOpEffects(pddl_h2_t *h,
                              pddl_h2_op_t *op,
                              int fact_val,
