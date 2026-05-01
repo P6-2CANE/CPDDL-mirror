@@ -24,7 +24,15 @@
 
 
 void pddlH2Free(pddl_h2_t *h2) {
-    return;
+    for (int i = 0; i < h2->fact_size; ++i) 
+        pddlISetFree(&h2->fact[i].pre_op);
+    if (h2->fact != NULL)
+        FREE(h2->fact); 
+
+    for (int i = 0; i < h2->op_size; ++i)
+        pddlISetFree(&h2->op[i].eff);
+    if (h2->op != NULL)
+        FREE(h2->op);
 }
 
 void pddlH2Init(pddl_h2_t *h, const pddl_fdr_t *fdr) {
