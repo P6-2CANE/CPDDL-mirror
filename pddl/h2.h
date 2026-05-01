@@ -23,6 +23,8 @@ typedef struct pddl_h2_op {
     int cost;       /* Cost of the operator */
     int pre_size;   /* Number of preconditions */
     int unsat;      /* Number of unsatisfied preconditions */
+    pddl_iset_t pfact /* Set of persistant facts */
+
 } pddl_h2_op_t;
 
 typedef struct pddl_h2_fact {
@@ -48,6 +50,7 @@ void pddlH2Free(pddl_h2_t *h2);
 int pddlH_2(pddl_h2_t *h,
            const int *s,
            const pddl_fdr_vars_t *vars);
+int pairFact(int x, int y, int n);
 
 #ifdef __cplusplus
 } /* extern "C" */
