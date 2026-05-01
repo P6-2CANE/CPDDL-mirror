@@ -57,7 +57,17 @@ static void addInitState(pddl_h2_t *h,
                          const int *s, 
                          const pddl_fdr_vars_t *vars, 
                          pddl_pq_t *C) {
-    return;
+    for (int i = 0; i < vars->var_size; ++i) {
+        int fact_id_i = vars->var[i].val[s[i]].global_id;
+        FPUSH(C, 0, h->fact + fact_id_i);
+
+        for (int j = i + 1; j < vars->var_size; j++){
+            int fact_id_j = vars->var[j].val[s[j]].global_id;
+            FPUSH(C, 0, h->fact + factPair(fact_id_i, fact_id_j, h->n));
+        }
+
+    }
+    FPUSH(C, 0, h->fact + h->fact_nopre);
 }
 
 static void enqueueOpEffects(pddl_h2_t *h,
