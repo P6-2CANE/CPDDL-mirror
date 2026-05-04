@@ -90,20 +90,20 @@ int factPair(int x, int y, int n) {
     return id;
 }
 
-void factPairReverse(int id, int n, pddl_iset_t *pair) {
+void factPairReverse(int id, int n, int *x, int *y) {
     // Constant k used in calculations
     int k = id-n;
+    int x_val = 0, y_val = 0;
 
-    // Calculate x-value (split into steps) and add to set
+    // Calculate x-value (split into steps) and update pointer
     float x_pow = pow((2*n-1),2);
     float x_sqrt = sqrt(x_pow-8*k);
-    int x = (int) (2*n-1-x_sqrt)/2;
-    pddlISetAdd(pair, x);
+    x_val = (int) ((2*n-1-x_sqrt)/2);
+    *x = x_val;
 
-    // Calculate y-value (split into steps) and add to set
-    int y = (x*2*n- x - 1)/2;
-    y = x+1+k - y;
-    pddlISetAdd(pair, y);
+    // Calculate y-value (split into steps) and update pointer
+    y_val = (x_val*2*n- x_val - 1)/2;
+    *y = x_val+1+k - y_val;
 }
 
 static void initFacts(pddl_h2_t *h) {
@@ -113,9 +113,9 @@ static void initFacts(pddl_h2_t *h) {
 }
 
 static void initOps(pddl_h2_t *h) {
-    for (int i = 0; i < h->fact_size; i++){
-        int pre_size  = h->op[i].pre_size;
-        h->op[i].unsat = pre_size * (pre_size + 1)/2; // Number of all possible combinations of unsatisfied preconditions
+    for (int i = 0; i < h->op_size; i++){
+        int pre_size = h->op[i].pre_size;
+        h->op[i].unsat = (pre_size * (pre_size + 1))/2; // Number of all possible combinations of unsatisfied preconditions
         pddlISetInit(&h->op[i].pfact); // Initialises the set of persistant facts to an empty set
     }
 }
@@ -132,7 +132,6 @@ static void addInitState(pddl_h2_t *h,
             int fact_id_j = vars->var[j].val[s[j]].global_id;
             FPUSH(C, 0, h->fact + factPair(fact_id_i, fact_id_j, h->n));
         }
-
     }
     FPUSH(C, 0, h->fact + h->fact_nopre);
 }
@@ -175,5 +174,65 @@ static void enqueueOpEffects(pddl_h2_t *h,
 int pddlH_2(pddl_h2_t *h,
                   const int *s,
                   const pddl_fdr_vars_t *vars) {
-    return 0;
+    pddl_pq_t C;
+    pddlPQInit(&C);
+
+    initFacts(h);
+    initOps(h);
+    addInitState(h, s, vars, &C);
+    
+    while (!pddlPQEmpty(&C)) {
+        int h_val; //Variable for heuristic value of latest popped k
+
+        pddl_pq_el_t *el = pddlPQPop(&C, &h_val); //popping k from queue C, and set heuristic value of k
+        pddl_h2_fact_t *fact = pddl_container_of(el, pddl_h2_fact_t, heap); //finding the fact object of k
+
+        int id_k = FID(h, fact); //finding the id of k
+
+        int op_id;
+        //If k is a singleton or empty precondition fact, apply action as in h1 
+        //k is a singleton if its id is less than the number of fact in the original problem
+        if (id_k < h->n || id_k == h->fact_nopre) { 
+            if (id_k == h->fact_goal) //break if k is equal to goal fact
+                break;
+
+            PDDL_ISET_FOR_EACH(&fact->pre_op, op_id) { //for each action where k is a precondition
+                pddl_h2_op_t *op = h->op + op_id; //finding the action object
+                //If this was the last unsatisfied precondition for this operator, enqueue the facts in the operator's effects
+                if (--op->unsat == 0)
+                enqueueOpEffects(h, op, h_val, &C);
+            }
+        } else { //If k is a pair
+            int id_f, id_q; //Variables for the two extracted facts in k
+
+            //variable for the intersection of actions where f and q is a precondition  
+            //By finding the intersection, we can find the actions where f and q exist as a pair in the preconditions
+            pddl_iset_t intersec; 
+            
+            factPairReverse(id_k, h->n, &id_f, &id_q); //Extracting ids of f and q from k
+            pddl_h2_fact_t *fact_f = h->fact + id_f; //Finding the fact objects of f and q
+            pddl_h2_fact_t *fact_q = h->fact + id_q;
+            
+            if (id_f == h->fact_goal || id_q == h->fact_goal) //Break if f or q in k is the goal fact
+                break;
+
+            pddlISetIntersect2(&intersec, &fact_f->pre_op, &fact_q->pre_op); //Finding the intersection
+            
+            PDDL_ISET_FOR_EACH(&intersec, op_id) { //for each action where {f, q} is a precondition
+                pddl_h2_op_t *op = h->op + op_id;
+                //If this was the last unsatisfied precondition for this operator, enqueue the facts in the operator's effects
+                if (--op->unsat == 0)
+                    enqueueOpEffects(h, op, h_val, &C);
+            }
+
+            pddlISetFree(&intersec);
+        }
+    }
+    
+    pddlPQFree(&C); //Free priority queue C
+
+    if (FVALUE_IS_SET(h->fact + h->fact_goal)) 
+        return FVALUE(h->fact + h->fact_goal);
+    else 
+        return PDDL_COST_DEAD_END;
 }
