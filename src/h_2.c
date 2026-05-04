@@ -36,6 +36,10 @@ void pddlH2Free(pddl_h2_t *h2) {
 }
 
 void pddlH2Init(pddl_h2_t *h, const pddl_fdr_t *fdr) {
+    ZEROIZE(h);
+    // Empty set to hold preconditions
+    PDDL_ISET(pre);
+
     // Store original number of facts n from fdr
     int n = fdr->var.global_id_size;
     h->n = n;
@@ -51,8 +55,7 @@ void pddlH2Init(pddl_h2_t *h, const pddl_fdr_t *fdr) {
     h->op = ZALLOC_ARR(pddl_h2_op_t, h->op_size);
     h->op_goal = h->op_size - 1;
 
-    // Empty set to hold preconditions
-    PDDL_ISET(pre);
+
 
     /* Iterate through operators 'src' in the fdr and assign
     to operators 'op' in the h2 struct */
@@ -79,8 +82,23 @@ void pddlH2Init(pddl_h2_t *h, const pddl_fdr_t *fdr) {
         op->pre_size = pddlISetSize(&pre);
 
         // Free up the memory of 'pre' set as it is no longer needed
-        pddlISetFree(&pre);
     }
+    /* Lastly, we initialize fact_goal and op_goal, which mark that a goal state has been achieved.
+    The operator op_goal has all the actual goal facts from FDR as its preconditions,
+    applying it costs nothing, and the effect is the artificial goal_fact.
+    In this way, a single fact can represent that all goal facts were indeed achieved.*/
+    pddl_h2_op_t *op = h->op + h->op_goal; // Pointer to op_goal
+    pddlISetAdd(&op->eff, h->fact_goal); // Set its effect to fact_goal
+    op->cost = 0; // This operator should not cost anything as it is artificially inserted
+
+    pddlISetEmpty(&pre); // Empty the set of preconditions used earlier (so we can reuse it)
+    pddlFDRPartStateToGlobalIDs(&fdr->goal, &fdr->var, &pre); // Store all goal facts from FDR in pre
+    int fact;
+    PDDL_ISET_FOR_EACH(&pre, fact) // For each of the facts in pre
+        pddlISetAdd(&h->fact[fact].pre_op, h->op_goal); // Add them to the preconditions of op_goal
+    op->pre_size = pddlISetSize(&pre); // Update the size of the preconditions in op_goal to match
+
+    pddlISetFree(&pre);
 }
 
 // From two fact ids, return the id representing their pair
@@ -90,20 +108,32 @@ int factPair(int x, int y, int n) {
     return id;
 }
 
+
 void factPairReverse(int id, int n, int *x, int *y) {
-    // Constant k used in calculations
-    int k = id-n;
+    // Constant k represents the 0-indexed offset within the pairs
+    int k = id - n;
     int x_val = 0, y_val = 0;
 
-    // Calculate x-value (split into steps) and update pointer
-    float x_pow = pow((2*n-1),2);
-    float x_sqrt = sqrt(x_pow-8*k);
-    x_val = (int) ((2*n-1-x_sqrt)/2);
+    // printf("id: %d, n: %d\n", id, n);
+    
+    // Calculate x-value using the quadratic formula and floor()
+    double x_pow = (2.0 * n - 1.0) * (2.0 * n - 1.0);
+    double x_sqrt = sqrt(x_pow - 8.0 * k);
+    
+    // Using floor instead of round to not jump to next integer
+    x_val = (int)floor((2.0 * n - 1.0 - x_sqrt) / 2.0);
+
+    // printf("Fact pair reverse calculation: x_pow: %f, x_sqrt: %f, x_val: %d \n", x_pow, x_sqrt, x_val);
+    
     *x = x_val;
 
-    // Calculate y-value (split into steps) and update pointer
-    y_val = (x_val*2*n- x_val - 1)/2;
-    *y = x_val+1+k - y_val;
+    // Calculate y-value offset
+    y_val = (x_val * (2 * n - x_val - 1)) / 2;
+    *y = x_val + 1 + k - y_val;
+
+    // printf("Fact pair reverse calculation: y_val: %d \n", y_val);
+    
+    PANIC_IF(*x < 0 || *y < 0 || *y >= n, "Fact pair reverse calculation resulted in out-of-bounds value");
 }
 
 static void initFacts(pddl_h2_t *h) {
@@ -180,10 +210,13 @@ int pddlH_2(pddl_h2_t *h,
     initFacts(h);
     initOps(h);
     addInitState(h, s, vars, &C);
-    
-    while (!pddlPQEmpty(&C)) {
-        int h_val; //Variable for heuristic value of latest popped k
 
+    PDDL_ISET(intersec); 
+    pddlISetInit(&intersec); 
+    
+    int h_val; //Variable for heuristic value of latest popped k
+
+    while (!pddlPQEmpty(&C)) {
         pddl_pq_el_t *el = pddlPQPop(&C, &h_val); //popping k from queue C, and set heuristic value of k
         pddl_h2_fact_t *fact = pddl_container_of(el, pddl_h2_fact_t, heap); //finding the fact object of k
 
@@ -207,16 +240,19 @@ int pddlH_2(pddl_h2_t *h,
 
             //variable for the intersection of actions where f and q is a precondition  
             //By finding the intersection, we can find the actions where f and q exist as a pair in the preconditions
-            pddl_iset_t intersec; 
             
             factPairReverse(id_k, h->n, &id_f, &id_q); //Extracting ids of f and q from k
+
+            
+            printf("\n\n f: %d, q: %d", id_f, id_q);
+            
             pddl_h2_fact_t *fact_f = h->fact + id_f; //Finding the fact objects of f and q
             pddl_h2_fact_t *fact_q = h->fact + id_q;
             
             if (id_f == h->fact_goal || id_q == h->fact_goal) //Break if f or q in k is the goal fact
                 break;
 
-            pddlISetIntersect2(&intersec, &fact_f->pre_op, &fact_q->pre_op); //Finding the intersection
+            pddlISetIntersect2(&intersec, &fact_f->pre_op, &fact_q->pre_op); //Finding the intersection (intersec is emptied by PDDLISetIntersect2) 
             
             PDDL_ISET_FOR_EACH(&intersec, op_id) { //for each action where {f, q} is a precondition
                 pddl_h2_op_t *op = h->op + op_id;
@@ -225,10 +261,12 @@ int pddlH_2(pddl_h2_t *h,
                     enqueueOpEffects(h, op, h_val, &C);
             }
 
-            pddlISetFree(&intersec);
+           
         }
     }
     
+    pddlISetFree(&intersec);
+
     pddlPQFree(&C); //Free priority queue C
 
     if (FVALUE_IS_SET(h->fact + h->fact_goal)) 
