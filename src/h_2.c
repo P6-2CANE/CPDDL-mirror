@@ -45,7 +45,7 @@ void pddlH2Init(pddl_h2_t *h, const pddl_fdr_t *fdr) {
     h->n = n;
 
     // Size of facts allocated for all facts, pairs of facts and auxiliary facts
-    h->fact_size = n + factPair(n-1, n-1, n) + 2;
+    h->fact_size = n + factPair(n-2, n-1, n) + 2;
     h->fact = ZALLOC_ARR(pddl_h2_fact_t, h->fact_size);
     h->fact_goal = h->fact_size - 2;
     h->fact_nopre = h->fact_size - 1;
@@ -63,6 +63,7 @@ void pddlH2Init(pddl_h2_t *h, const pddl_fdr_t *fdr) {
         // Get pointers to src and op operators
         const pddl_fdr_op_t *src = fdr->op.op[op_id];
         pddl_h2_op_t *op = h->op + op_id;
+        op->global_id = op_id;
 
         // Transfer effects from src to op as fact ids
         pddlFDRPartStateToGlobalIDs(&src->eff, &fdr->var, &op->eff);
@@ -103,9 +104,16 @@ void pddlH2Init(pddl_h2_t *h, const pddl_fdr_t *fdr) {
 
 // From two fact ids, return the id representing their pair
 int factPair(int x, int y, int n) {
-    int id = (x*(2*n-x-1))/2;
-    id = n + id + (y-x-1);
-    return id;
+    int id;
+    if (x == y) {
+        return x;
+    } else if (x < y) {
+        id = (x*(2*n-x-1))/2;
+        return n + id + (y-x-1);
+    } else {
+        id = (y*(2*n-y-1))/2;
+        return n + id + (x-y-1);
+    }
 }
 
 
@@ -179,14 +187,8 @@ static void addContext( pddl_h2_t *h, /* h is used for h->n */
         pddl_h2_fact_t *fact; /* local variable to hold the fact */
 
         /* finding the fact, using the ID calculated with factPair
-           factPair(x, y, n) requires that x <= y 
-           therefore we need to compare fid and fid_q in order to apply correctly. 
         */
-        if (fid < fid_q) { 
-            fact = h->fact + factPair(fid, fid_q, h->n);
-        } else {
-            fact = h->fact + factPair(fid_q, fid, h->n);
-        }
+        fact = h->fact + factPair(fid, fid_q, h->n);
         
         /* If new path is cheaper push fact to priority queue with new value */
         if (FVALUE(fact) > val)
@@ -194,11 +196,126 @@ static void addContext( pddl_h2_t *h, /* h is used for h->n */
     }
 }
 
-static void enqueueOpEffects(pddl_h2_t *h,
-                             pddl_h2_op_t *op,
-                             int fact_val,
-                             pddl_pq_t *C) {
-    return;
+static void applyAction(pddl_h2_t *h,
+                        pddl_h2_op_t *op,
+                        pddl_fdr_vars_t *vars,
+                        int h_val,
+                        pddl_pq_t *C,
+                        pddl_fdr_ops_t *ops,
+                        pddl_fdr_t *fdr) {
+    int var_size = vars->var_size; // number of variables in fdr
+    int var_limits[var_size+1]; // empty array to hold upper limit ids of variables
+    var_limits[0] = 0; // lowest limit is always 0
+    int limit = 0; // initialize first limit to 0
+    for(int i = 1; i < var_size; i++) { // for each variable
+        var_limits[i] = limit + vars->var[i].val_size; // set its limit to the accumulated val_size
+    }
+
+    /* now, we can tell if a fact is in a variable i by checking that its value is 
+    *  >= var_limits[i-1] and < var_limits[i]
+    * (in this case, variables are 0-indexed, so we start with variable 0)
+    */
+
+    /* var1: 3 values, var2: 2 values, var3: 4 values
+    *  var_limits: [0, 3, 5, 9]
+    *
+    *  for all fid, if fid >= var_limits[i-1] && fid < var_limits[i], then fid is in variable i.
+    * 
+    *  fid=0, i=1: 0>= var_limits[1-1] && 0 < var_limits[1], this fid is in var1
+    *  fid=3, i=2: 3>= var_limits[2-1] && 3 < var_limits[2], this fid is in var2
+    *  fid=8, i=3: 8>= var_limits[3-1] && 8 < var_limits[3], this fid is in var3
+    */
+
+    int id_q;
+    for (int i = 0; i < &h->n; i++) { // iterate through all singleton facts
+        id_q = h->fact + i; // id of current fact q
+        int q_var = 0; // initially set variable of q to 0 (no variable)
+        
+        // Iterate through var_limits
+        for (int i = 1; i < var_size + 1; i++) {
+            if (id_q >= var_limits[i-1] && id_q < var_limits[i]) { // If q falls within this variable
+                q_var = i; // i denotes the variable id locally (not necessarily the same as the global id for the var!!)
+                break; // break from loop when variable is found
+            }
+        }
+
+        // now we have our q_var :D
+
+        // if any of the effects of the operator share a variable with q, continue for loop for next q
+        if (sameVariable(&op->eff, q_var, var_limits)) {
+            continue;
+        }
+
+        // now we know that q is either prevail or persistent fact!!
+        
+        // We find all preconditions for the operator:
+        pddl_fdr_op_t *fdr_op = ops->op + op->global_id; // find the operator in the FDR
+        PDDL_ISET(pre); // initialise empty set pre
+        pddlFDRPartStateToGlobalIDs(&fdr_op->pre, &fdr->var, &pre); // transfer all preconditions from FDR to our pre set
+        
+        // if q is in the precondition, add context for the prevail fact
+        if (pddlISetHas(&pre, id_q)) {
+            addContext(h, op, id_q, h_val, C);
+        } 
+        // else if q shares a variable with any precondition p, continue outer for loop for next q
+        else if (sameVariable(&pre, q_var, var_limits)) {
+            continue;
+        } 
+        // else if all pairs of {p, q} have an h-value, add context for the persistent fact
+        else if (allHValuesAreSet(&pre, id_q, h)) {
+            addContext(h, op, id_q, h_val, C);
+        } 
+        // else, the persistent fact is not yet applicable, store in operator's pfact set
+        else {
+            pddlISetAdd(&op->pfact, id_q);
+        }
+
+        /* Apply the action itself */
+        int id_f;
+        int val = &op->cost + h_val;
+
+        // for all singleton effects f, if the newly achieved value is cheaper than the previous, push it to the queue
+        PDDL_ISET_FOR_EACH(&op->eff, id_f) {
+            pddl_h2_fact_t *fact = &h->fact[id_f];
+            if (FVALUE(fact) > val) {
+                FPUSH(C, val, fact);
+            }
+            // for all pairs {f,q} in the effects of the operator, if the newly achieved value is cheaper than the previous, push it to the queue
+            PDDL_ISET_FOR_EACH(&op->eff, id_q) {
+                int pair_id = factPair(id_f, id_q, h->n); // find the id of the pair
+                pddl_h2_fact_t *fact = &h->fact[pair_id];
+                if (FVALUE(fact) > val) {
+                    FPUSH(C, val, fact);
+                }
+            }
+        }
+
+    }
+}
+
+/* Checks if h-value is set for each pair {p,q} */
+int allHValuesAreSet(pddl_iset_t *fact_set, int fact_id, pddl_h2_t *h) {
+    int pre_fact; //pre_fact = f in the pair f,q
+    int pair_id;
+    PDDL_ISET_FOR_EACH(fact_set, pre_fact)
+        pair_id = factPair(pre_fact, fact_id, h->n);
+
+        pddl_h2_fact_t *fact = &h->fact[pair_id];
+        if (!FVALUE_IS_SET(fact)) {
+            return 0;
+        }
+    return 1;
+}
+
+/*Checks if any fact in a set shares a variable q_var */
+int sameVariable(pddl_iset_t *fact_set, int q_var, int *var_limits) {
+    int fact_id;
+    PDDL_ISET_FOR_EACH(fact_set, fact_id) {
+        if(fact_id >= var_limits[q_var-1] && fact_id < var_limits[q_var]) {
+            return 0;
+        }
+    }
+    return 1;
 }
 
 int pddlH_2(pddl_h2_t *h,
