@@ -360,9 +360,6 @@ int pddlH_2(pddl_h2_t *h,
             //By finding the intersection, we can find the actions where f and q exist as a pair in the preconditions
             
             factPairReverse(k, h->n, &id_f, &id_q); //Extracting ids of f and q from k
-
-            
-            printf("\n\n f: %d, q: %d", id_f, id_q);
             
             pddl_h2_fact_t *fact_f = h->fact + id_f; //Finding the fact objects of f and q
             pddl_h2_fact_t *fact_q = h->fact + id_q;
