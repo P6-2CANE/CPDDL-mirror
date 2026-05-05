@@ -205,7 +205,7 @@ static void applyAdditionalContext( pddl_h2_t *h, /* h is used for h->n */
 
 void getPreconditions(  pddl_h2_t *h, 
                         pddl_h2_op_t *op,
-                        pddl_fdr_vars_t *vars,
+                        const pddl_fdr_vars_t *vars,
                         pddl_iset_t *pre) {
     const pddl_fdr_op_t *fdr_op = h->ops->op[op->global_id]; // find the operator in the FDR
     pddlFDRPartStateToGlobalIDs(&fdr_op->pre, vars, pre); // transfer all preconditions from FDR to our pre set
@@ -222,7 +222,8 @@ static void applyAction(pddl_h2_t *h,
     int limit = 0; // initialize first limit to 0
 
     for (int i = 0; i < var_size; ++i) {
-        var_limits[i + 1] = var_limits[i] + vars->var[i].val_size;
+        limit += vars->var[i].val_size; // initialize first limit to 0
+        var_limits[i + 1] = limit;
     }
 
     /* now, we can tell if a fact is in a variable i by checking that its value is 
@@ -339,11 +340,9 @@ int pddlH_2(pddl_h2_t *h,
     //variable for the intersection of actions where f and q is a precondition  
     //By finding the intersection, we can find the actions where f and q exist as a pair in the preconditions
     PDDL_ISET(intersec); 
+    PDDL_ISET(pre);
     //pddlISetInit(&intersec); 
-    
 
-
-    
     int h_val_k; //Variable for heuristic value of latest popped k
 
     while (!pddlPQEmpty(&C)) {
@@ -393,7 +392,7 @@ int pddlH_2(pddl_h2_t *h,
 
         for (int i = 0; i < h->op_size; i++) {
             pddl_h2_op_t *op = h->op + i;
-            PDDL_ISET(pre);
+            pddlISetEmpty(&pre);
             getPreconditions(h, op, vars, &pre);
             if (isPair == 0 && pddlISetHas(&op->pfact, k) && allHValuesAreSet(&pre, k, h)) {
                 applyAdditionalContext(h, op, k, h_val_k, &C);
@@ -409,8 +408,10 @@ int pddlH_2(pddl_h2_t *h,
                 pddlISetRm(&op->pfact, id_q);
             }
         }
+
     }
     
+    pddlISetFree(&pre);
     pddlISetFree(&intersec);
 
     pddlPQFree(&C); //Free priority queue C
