@@ -181,7 +181,7 @@ static void addInitState(pddl_h2_t *h,
 }
 
 /* Function to apply additional context (persistent/prevailing fact) to an action */
-static void addContext( pddl_h2_t *h, /* h is used for h->n */
+static void applyAdditionalContext( pddl_h2_t *h, /* h is used for h->n */
                         pddl_h2_op_t *op, /* the action to be applied */
                         int id_q, /* the id of the persistent/prevailing fact */
                         int h_val_k, /* the heuristic value of the latest popped fact k */
@@ -261,7 +261,7 @@ static void applyAction(pddl_h2_t *h,
         
         // if q is in the precondition, add context for the prevail fact
         if (pddlISetHas(&pre, id_q)) {
-            addContext(h, op, id_q, h_val_k, C);
+            applyAdditionalContext(h, op, id_q, h_val, C);
         } 
         // else if q shares a variable with any precondition p, continue outer for loop for next q
         else if (sameVariable(&pre, q_var, var_limits)) {
@@ -269,7 +269,7 @@ static void applyAction(pddl_h2_t *h,
         } 
         // else if all pairs of {p, q} have an h-value, add context for the persistent fact
         else if (allHValuesAreSet(&pre, id_q, h)) {
-            addContext(h, op, id_q, h_val_k, C);
+            applyAdditionalContext(h, op, id_q, h_val, C);
         } 
         // else, the persistent fact is not yet applicable, store in operator's pfact set
         else {
