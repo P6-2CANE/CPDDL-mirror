@@ -351,6 +351,7 @@ int pddlH_2(pddl_h2_t *h,
                 //If this was the last unsatisfied precondition for this operator, enqueue the facts in the operator's effects
                 if (--op->unsat == 0) {
                 applyAction(h, op, vars, h_val_k, &C);
+                }
             }
         } else { //If k is a pair
             int id_f, id_q; //Variables for the two extracted facts in k
