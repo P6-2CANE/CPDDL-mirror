@@ -52,6 +52,9 @@ int pddlH_2(pddl_h2_t *h,
            const int *s,
            const pddl_fdr_vars_t *vars);
 int factPair(int x, int y, int n);
+int sameVariable(pddl_iset_t *fact_set, int q_var, int *var_limits);
+int allHValuesAreSet(pddl_iset_t *fact_set, int fact_id, pddl_h2_t *h);
+
 
 #ifdef __cplusplus
 } /* extern "C" */
