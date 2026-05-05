@@ -349,7 +349,7 @@ int pddlH_2(pddl_h2_t *h,
             PDDL_ISET_FOR_EACH(&fact->pre_op, op_id) { //for each action where k is a precondition
                 pddl_h2_op_t *op = h->op + op_id; //finding the action object
                 //If this was the last unsatisfied precondition for this operator, enqueue the facts in the operator's effects
-                if (--op->unsat == 0)
+                if (--op->unsat == 0) {
                 applyAction(h, op, vars, h_val_k, &C);
             }
         } else { //If k is a pair
@@ -375,8 +375,9 @@ int pddlH_2(pddl_h2_t *h,
             PDDL_ISET_FOR_EACH(&intersec, op_id) { //for each action where {f, q} is a precondition
                 pddl_h2_op_t *op = h->op + op_id;
                 //If this was the last unsatisfied precondition for this operator, enqueue the facts in the operator's effects
-                if (--op->unsat == 0)
+                if (--op->unsat == 0) {
                     applyAction(h, op, vars, h_val_k, &C);
+                }
             }
         }
     }
