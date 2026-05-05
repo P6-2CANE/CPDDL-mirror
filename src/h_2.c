@@ -207,8 +207,7 @@ static void applyAction(pddl_h2_t *h,
                         pddl_h2_op_t *op,
                         pddl_fdr_vars_t *vars,
                         int h_val_k,
-                        pddl_pq_t *C,
-                        pddl_fdr_ops_t *ops) {
+                        pddl_pq_t *C) {
     int var_size = vars->var_size; // number of variables in fdr
     int var_limits[var_size+1]; // empty array to hold upper limit ids of variables
     var_limits[0] = 0; // lowest limit is always 0
@@ -351,7 +350,7 @@ int pddlH_2(pddl_h2_t *h,
                 pddl_h2_op_t *op = h->op + op_id; //finding the action object
                 //If this was the last unsatisfied precondition for this operator, enqueue the facts in the operator's effects
                 if (--op->unsat == 0)
-                enqueueOpEffects(h, op, h_val_k, &C); // TODO: replace with applyAction
+                applyAction(h, op, vars, h_val_k, &C);
             }
         } else { //If k is a pair
             int id_f, id_q; //Variables for the two extracted facts in k
@@ -377,7 +376,7 @@ int pddlH_2(pddl_h2_t *h,
                 pddl_h2_op_t *op = h->op + op_id;
                 //If this was the last unsatisfied precondition for this operator, enqueue the facts in the operator's effects
                 if (--op->unsat == 0)
-                    enqueueOpEffects(h, op, h_val_k, &C);
+                    applyAction(h, op, vars, h_val_k, &C);
             }
         }
     }

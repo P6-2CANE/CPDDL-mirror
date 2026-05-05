@@ -42,7 +42,7 @@ typedef struct pddl_h2 {
     pddl_h2_op_t *op; /* Maybe: List of all operations? */
     int op_size; /* Maybe: How many operations in this pddl? */
     int op_goal;/* Maybe: How many operators lead to goal state? */
-    pddl_fdr_ops_t *ops; /* Operators from the FDR */
+    const pddl_fdr_ops_t *ops; /* Operators from the FDR */
 } pddl_h2_t;
 
 /****************** Function declarations ******************/
