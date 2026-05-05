@@ -283,6 +283,8 @@ static void applyAction(pddl_h2_t *h,
         else {
             pddlISetAdd(&op->pfact, id_q);
         }
+
+        pddlISetFree(&pre);
     }
     /* Apply the action itself */
     int id_f;
@@ -298,7 +300,6 @@ static void applyAction(pddl_h2_t *h,
         }
     }
 }
-
 
 
 /* Checks if h-value is set for each pair {p,q} */
@@ -408,7 +409,6 @@ int pddlH_2(pddl_h2_t *h,
                 pddlISetRm(&op->pfact, id_q);
             }
         }
-
     }
     
     pddlISetFree(&pre);
