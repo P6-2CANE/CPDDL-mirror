@@ -54,7 +54,7 @@ void pddlH2Init(pddl_h2_t *h, const pddl_fdr_t *fdr) {
     h->n = n;
 
     // Size of facts allocated for all facts, pairs of facts and auxiliary facts
-    h->fact_size = n + factPair(n-2, n-1, n) + 2;
+    h->fact_size = factPair(n-2, n-1, n) + 2;
     h->fact = ZALLOC_ARR(pddl_h2_fact_t, h->fact_size);
     h->fact_goal = h->fact_size - 2;
     h->fact_nopre = h->fact_size - 1;
@@ -423,7 +423,7 @@ int pddlH_2(pddl_h2_t *h,
     pddlISetFree(&intersec);
 
     pddlPQFree(&C); //Free priority queue C
-
+    
     if (FVALUE_IS_SET(h->fact + h->fact_goal)) {
         return FVALUE(h->fact + h->fact_goal);
     } else {
