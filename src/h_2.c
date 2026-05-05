@@ -33,9 +33,14 @@ void pddlH2Free(pddl_h2_t *h2) {
 
     for (int i = 0; i < h2->op_size; ++i) {
         pddlISetFree(&h2->op[i].eff);
+        pddlISetFree(&h2->op[i].pfact);
     }
     if (h2->op != NULL) {
         FREE(h2->op);
+    }
+
+    if (h2->ops != NULL) {
+        h2->ops = NULL;
     }
 }
 
