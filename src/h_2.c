@@ -203,6 +203,14 @@ static void applyAdditionalContext( pddl_h2_t *h, /* h is used for h->n */
     }
 }
 
+void getPreconditions(  pddl_h2_t *h, 
+                        pddl_h2_op_t *op,
+                        pddl_fdr_vars_t *vars,
+                        pddl_iset_t *pre) {
+    const pddl_fdr_op_t *fdr_op = h->ops->op[op->global_id]; // find the operator in the FDR
+    pddlFDRPartStateToGlobalIDs(&fdr_op->pre, vars, pre); // transfer all preconditions from FDR to our pre set
+}
+
 static void applyAction(pddl_h2_t *h,
                         pddl_h2_op_t *op,
                         const pddl_fdr_vars_t *vars,
@@ -256,9 +264,8 @@ static void applyAction(pddl_h2_t *h,
         // now we know that q is either prevail or persistent fact!!
         
         // We find all preconditions for the operator:
-        const pddl_fdr_op_t *fdr_op = h->ops->op[op->global_id]; // find the operator in the FDR
         PDDL_ISET(pre); // initialise empty set pre
-        pddlFDRPartStateToGlobalIDs(&fdr_op->pre, vars, &pre); // transfer all preconditions from FDR to our pre set
+        getPreconditions(h, op, vars, &pre);
         
         // if q is in the precondition, add context for the prevail fact
         if (pddlISetHas(&pre, id_q)) {
@@ -291,6 +298,8 @@ static void applyAction(pddl_h2_t *h,
         }
     }
 }
+
+
 
 /* Checks if h-value is set for each pair {p,q} */
 int allHValuesAreSet(pddl_iset_t *fact_set, int fact_id, pddl_h2_t *h) {
@@ -328,8 +337,13 @@ int pddlH_2(pddl_h2_t *h,
     initOps(h);
     addInitState(h, s, vars, &C);
 
+    //variable for the intersection of actions where f and q is a precondition  
+    //By finding the intersection, we can find the actions where f and q exist as a pair in the preconditions
     PDDL_ISET(intersec); 
-    pddlISetInit(&intersec); 
+    //pddlISetInit(&intersec); 
+    
+
+
     
     int h_val_k; //Variable for heuristic value of latest popped k
 
@@ -338,6 +352,8 @@ int pddlH_2(pddl_h2_t *h,
         pddl_h2_fact_t *fact = pddl_container_of(el, pddl_h2_fact_t, heap); //finding the fact object of k
 
         int k = FID(h, fact); //finding the id of the latest popped fact k
+        int isPair = 0; 
+        int id_f, id_q; //Variables for the two extracted facts in k
 
         int op_id;
         //If k is a singleton or empty precondition fact, apply action as in h1 
@@ -355,19 +371,15 @@ int pddlH_2(pddl_h2_t *h,
                 }
             }
         } else { //If k is a pair
-            int id_f, id_q; //Variables for the two extracted facts in k
-
-            //variable for the intersection of actions where f and q is a precondition  
-            //By finding the intersection, we can find the actions where f and q exist as a pair in the preconditions
-            
             factPairReverse(k, h->n, &id_f, &id_q); //Extracting ids of f and q from k
-            
-            pddl_h2_fact_t *fact_f = h->fact + id_f; //Finding the fact objects of f and q
-            pddl_h2_fact_t *fact_q = h->fact + id_q;
             
             if (id_f == h->fact_goal || id_q == h->fact_goal) { //Break if f or q in k is the goal fact
                 break;
             }
+            
+            isPair = 1;
+            pddl_h2_fact_t *fact_f = h->fact + id_f; //Finding the fact objects of f and q
+            pddl_h2_fact_t *fact_q = h->fact + id_q;
 
             pddlISetIntersect2(&intersec, &fact_f->pre_op, &fact_q->pre_op); //Finding the intersection (intersec is emptied by PDDLISetIntersect2) 
             
@@ -377,6 +389,25 @@ int pddlH_2(pddl_h2_t *h,
                 if (--op->unsat == 0) {
                     applyAction(h, op, vars, h_val_k, &C);
                 }
+            }
+        }
+
+        for (int i = 0; i < h->op_size; i++) {
+            pddl_h2_op_t *op = h->op + i;
+            PDDL_ISET(pre);
+            getPreconditions(h, op, vars, &pre);
+            if (isPair == 0 && pddlISetHas(&op->pfact, k) && allHValuesAreSet(&pre, k, h)) {
+                applyAdditionalContext(h, op, k, h_val_k, &C);
+                pddlISetRm(&op->pfact, k);
+                continue;
+            }
+            if (isPair == 1 && pddlISetHas(&op->pfact, id_f) && allHValuesAreSet(&pre, id_f, h)) {
+                applyAdditionalContext(h, op, id_f, h_val_k, &C);
+                pddlISetRm(&op->pfact, id_f);
+            } 
+            if (isPair == 1 && pddlISetHas(&op->pfact, id_q) && allHValuesAreSet(&pre, id_q, h)) {
+                applyAdditionalContext(h, op, id_q, h_val_k, &C);
+                pddlISetRm(&op->pfact, id_q);
             }
         }
     }
