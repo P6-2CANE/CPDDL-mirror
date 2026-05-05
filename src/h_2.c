@@ -205,7 +205,7 @@ static void applyAdditionalContext( pddl_h2_t *h, /* h is used for h->n */
 
 static void applyAction(pddl_h2_t *h,
                         pddl_h2_op_t *op,
-                        pddl_fdr_vars_t *vars,
+                        const pddl_fdr_vars_t *vars,
                         int h_val_k,
                         pddl_pq_t *C) {
     int var_size = vars->var_size; // number of variables in fdr
@@ -233,8 +233,8 @@ static void applyAction(pddl_h2_t *h,
     */
 
     int id_q;
-    for (int i = 0; i < &h->n; i++) { // iterate through all singleton facts
-        id_q = h->fact + i; // id of current fact q
+    for (int i = 0; i < h->n; i++) { // iterate through all singleton facts
+        id_q = i; // id of current fact q
         int q_var = 0; // initially set variable of q to 0 (no variable)
         
         // Iterate through var_limits
@@ -255,9 +255,9 @@ static void applyAction(pddl_h2_t *h,
         // now we know that q is either prevail or persistent fact!!
         
         // We find all preconditions for the operator:
-        pddl_fdr_op_t *fdr_op = h->ops->op + op->global_id; // find the operator in the FDR
+        const pddl_fdr_op_t *fdr_op = h->ops->op[op->global_id]; // find the operator in the FDR
         PDDL_ISET(pre); // initialise empty set pre
-        pddlFDRPartStateToGlobalIDs(&fdr_op->pre, &vars->var, &pre); // transfer all preconditions from FDR to our pre set
+        pddlFDRPartStateToGlobalIDs(&fdr_op->pre, vars, &pre); // transfer all preconditions from FDR to our pre set
         
         // if q is in the precondition, add context for the prevail fact
         if (pddlISetHas(&pre, id_q)) {
@@ -278,7 +278,7 @@ static void applyAction(pddl_h2_t *h,
     }
     /* Apply the action itself */
     int id_f;
-    int val = &op->cost + h_val_k;
+    int val = op->cost + h_val_k;
     // for all singletons and pairs of effects f, if the newly achieved value is cheaper than the previous, push it to the queue
     PDDL_ISET_FOR_EACH(&op->eff, id_f) {
         PDDL_ISET_FOR_EACH(&op->eff, id_q) {
