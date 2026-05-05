@@ -54,8 +54,8 @@ void pddlH2Init(pddl_h2_t *h, const pddl_fdr_t *fdr) {
     h->op_size = fdr->op.op_size + 1;
     h->op = ZALLOC_ARR(pddl_h2_op_t, h->op_size);
     h->op_goal = h->op_size - 1;
-
-
+    //Store reference to the operators of the fdr
+    h->ops = &fdr->op;
 
     /* Iterate through operators 'src' in the fdr and assign
     to operators 'op' in the h2 struct */
@@ -249,7 +249,7 @@ static void applyAction(pddl_h2_t *h,
         // now we know that q is either prevail or persistent fact!!
         
         // We find all preconditions for the operator:
-        pddl_fdr_op_t *fdr_op = ops->op + op->global_id; // find the operator in the FDR
+        pddl_fdr_op_t *fdr_op = h->ops->op + op->global_id; // find the operator in the FDR
         PDDL_ISET(pre); // initialise empty set pre
         pddlFDRPartStateToGlobalIDs(&fdr_op->pre, &fdr->var, &pre); // transfer all preconditions from FDR to our pre set
         
@@ -269,27 +269,19 @@ static void applyAction(pddl_h2_t *h,
         else {
             pddlISetAdd(&op->pfact, id_q);
         }
-
-        /* Apply the action itself */
-        int id_f;
-        int val = &op->cost + h_val;
-
-        // for all singleton effects f, if the newly achieved value is cheaper than the previous, push it to the queue
-        PDDL_ISET_FOR_EACH(&op->eff, id_f) {
-            pddl_h2_fact_t *fact = &h->fact[id_f];
+    }
+    /* Apply the action itself */
+    int id_f;
+    int val = &op->cost + h_val;
+    // for all singletons and pairs of effects f, if the newly achieved value is cheaper than the previous, push it to the queue
+    PDDL_ISET_FOR_EACH(&op->eff, id_f) {
+        PDDL_ISET_FOR_EACH(&op->eff, id_q) {
+            int pair_id = factPair(id_f, id_q, h->n); // find the id of the pair
+            pddl_h2_fact_t *fact = &h->fact[pair_id];
             if (FVALUE(fact) > val) {
                 FPUSH(C, val, fact);
             }
-            // for all pairs {f,q} in the effects of the operator, if the newly achieved value is cheaper than the previous, push it to the queue
-            PDDL_ISET_FOR_EACH(&op->eff, id_q) {
-                int pair_id = factPair(id_f, id_q, h->n); // find the id of the pair
-                pddl_h2_fact_t *fact = &h->fact[pair_id];
-                if (FVALUE(fact) > val) {
-                    FPUSH(C, val, fact);
-                }
-            }
         }
-
     }
 }
 
@@ -297,13 +289,14 @@ static void applyAction(pddl_h2_t *h,
 int allHValuesAreSet(pddl_iset_t *fact_set, int fact_id, pddl_h2_t *h) {
     int pre_fact; //pre_fact = f in the pair f,q
     int pair_id;
-    PDDL_ISET_FOR_EACH(fact_set, pre_fact)
+    PDDL_ISET_FOR_EACH(fact_set, pre_fact) {
         pair_id = factPair(pre_fact, fact_id, h->n);
 
         pddl_h2_fact_t *fact = &h->fact[pair_id];
         if (!FVALUE_IS_SET(fact)) {
             return 0;
         }
+    }
     return 1;
 }
 
@@ -350,7 +343,7 @@ int pddlH_2(pddl_h2_t *h,
                 pddl_h2_op_t *op = h->op + op_id; //finding the action object
                 //If this was the last unsatisfied precondition for this operator, enqueue the facts in the operator's effects
                 if (--op->unsat == 0)
-                enqueueOpEffects(h, op, h_val, &C);
+                enqueueOpEffects(h, op, h_val, &C); // TODO: replace with applyAction
             }
         } else { //If k is a pair
             int id_f, id_q; //Variables for the two extracted facts in k
