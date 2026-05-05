@@ -221,7 +221,6 @@ static void applyAction(pddl_h2_t *h,
     var_limits[0] = 0; // lowest limit is always 0
     int limit = 0; // initialize first limit to 0
 
-    var_limits[0] = 0;
     for (int i = 0; i < var_size; ++i) {
         var_limits[i + 1] = var_limits[i] + vars->var[i].val_size;
     }
