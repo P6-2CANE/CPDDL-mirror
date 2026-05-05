@@ -241,30 +241,33 @@ static void applyAction(pddl_h2_t *h,
     *  fid=8, i=3: 8>= var_limits[3-1] && 8 < var_limits[3], this fid is in var3
     */
 
+   PDDL_ISET(pre); // initialise empty set pre
+
     int id_q;
     for (int i = 0; i < h->n; i++) { // iterate through all singleton facts
         id_q = i; // id of current fact q
         int q_var = 0; // initially set variable of q to 0 (no variable)
         
         // Iterate through var_limits
-        for (int i = 1; i < var_size + 1; i++) {
-            if (id_q >= var_limits[i-1] && id_q < var_limits[i]) { // If q falls within this variable
-                q_var = i; // i denotes the variable id locally (not necessarily the same as the global id for the var!!)
+        for (int j = 1; j < var_size + 1; j++) {
+            if (id_q >= var_limits[j-1] && id_q < var_limits[j]) { // If q falls within this variable
+                q_var = j; // i denotes the variable id locally (not necessarily the same as the global id for the var!!)
                 break; // break from loop when variable is found
             }
         }
 
+        
         // now we have our q_var :D
-
+        
         // if any of the effects of the operator share a variable with q, continue for loop for next q
         if (sameVariable(&op->eff, q_var, var_limits)) {
             continue;
         }
-
+        
         // now we know that q is either prevail or persistent fact!!
         
         // We find all preconditions for the operator:
-        PDDL_ISET(pre); // initialise empty set pre
+        pddlISetEmpty(&pre);
         getPreconditions(h, op, vars, &pre);
         
         // if q is in the precondition, add context for the prevail fact
@@ -284,8 +287,8 @@ static void applyAction(pddl_h2_t *h,
             pddlISetAdd(&op->pfact, id_q);
         }
 
-        pddlISetFree(&pre);
     }
+    pddlISetFree(&pre);
     /* Apply the action itself */
     int id_f;
     int val = op->cost + h_val_k;
