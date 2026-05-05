@@ -212,9 +212,10 @@ static void applyAction(pddl_h2_t *h,
     int var_limits[var_size+1]; // empty array to hold upper limit ids of variables
     var_limits[0] = 0; // lowest limit is always 0
     int limit = 0; // initialize first limit to 0
-    for(int i = 1; i < var_size; i++) { // for each variable
-        limit += vars->var[i-1].val_size; // accumulate the val_size of the previous variable to get the next limit
-        var_limits[i] = limit; // set its limit to the accumulated val_size
+
+    var_limits[0] = 0;
+    for (int i = 0; i < var_size; ++i) {
+        var_limits[i + 1] = var_limits[i] + vars->var[i].val_size;
     }
 
     /* now, we can tell if a fact is in a variable i by checking that its value is 
