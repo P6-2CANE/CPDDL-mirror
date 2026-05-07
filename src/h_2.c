@@ -55,7 +55,7 @@ void pddlH2Init(pddl_h2_t *h, const pddl_fdr_t *fdr) {
     printf("n: %d \n", n);
 
     // Size of facts allocated for all facts, pairs of facts and auxiliary facts
-    h->fact_size = factPair(n-2, n-1, n) + 3;
+    h->fact_size = factPair(n-2, n-1, n) + 3; // index of the last fact +1 to get the size, +2 more for auxiliary facts
     h->fact = ZALLOC_ARR(pddl_h2_fact_t, h->fact_size);
     h->fact_goal = h->fact_size - 2;
     h->fact_nopre = h->fact_size - 1;
