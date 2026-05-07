@@ -61,7 +61,8 @@ void pddlH2Init(pddl_h2_t *h, const pddl_fdr_t *fdr) {
     h->fact_nopre = h->fact_size - 1;
 
     printf("n2: %d \n", h->fact_size);
-    printf("fact_goal: %d \n", h->fact_goal);
+    printf("fact_goal index: %d \n", h->fact_goal);
+    printf("no-pre index: %d \n", h->fact_nopre);
 
     // Only original operators are set up
     h->op_size = fdr->op.op_size + 1;
@@ -69,6 +70,19 @@ void pddlH2Init(pddl_h2_t *h, const pddl_fdr_t *fdr) {
     h->op_goal = h->op_size - 1;
     //Store reference to the operators of the fdr
     h->ops = &fdr->op;
+
+    PDDL_ISET(ops);
+
+    printf("h->ops: %d, \n", h->ops->op[0]->id); 
+    printf("Printing preconditions for ops->op[0]: ");
+    pddlFDRPartStateToGlobalIDs(&h->ops->op[0]->pre, &fdr->var, &ops);
+    for (int i = 0; i < pddlISetSize(&ops); i++) {
+        printf("%d - ", ops.s[i]);
+    }
+
+    printf("\n");
+    printf("op_size: %d \n", h->op_size);
+    printf("op_goal index: %d \n", h->op_goal);
 
     /* Iterate through operators 'src' in the fdr and assign
     to operators 'op' in the h2 struct */
@@ -87,7 +101,6 @@ void pddlH2Init(pddl_h2_t *h, const pddl_fdr_t *fdr) {
         pddlISetEmpty(&pre);
         // Transfer preconditions from src to 'pre' set as fact ids
         pddlFDRPartStateToGlobalIDs(&src->pre, &fdr->var, &pre);
-        
         // For each fact in the preconditions, add the id of the current operator
         int fact;
         PDDL_ISET_FOR_EACH(&pre, fact) {
@@ -99,11 +112,10 @@ void pddlH2Init(pddl_h2_t *h, const pddl_fdr_t *fdr) {
         if (op->pre_size == 0) { 
             // Add operator to nopre's set of operators who have it as a precondition
             pddlISetAdd(&h->fact[h->fact_nopre].pre_op, op_id);
-            /* Operator now technically has one precondition */
+            //Operator now technically has one precondition
             op->pre_size = 1;
         }
 
-        // Free up the memory of 'pre' set as it is no longer needed
     }
     /* Lastly, we initialize fact_goal and op_goal, which mark that a goal state has been achieved.
     The operator op_goal has all the actual goal facts from FDR as its preconditions,
@@ -112,7 +124,7 @@ void pddlH2Init(pddl_h2_t *h, const pddl_fdr_t *fdr) {
     pddl_h2_op_t *op = h->op + h->op_goal; // Pointer to op_goal
     pddlISetAdd(&op->eff, h->fact_goal); // Set its effect to fact_goal
     op->cost = 0; // This operator should not cost anything as it is artificially inserted
-
+    
     pddlISetEmpty(&pre); // Empty the set of preconditions used earlier (so we can reuse it)
     pddlFDRPartStateToGlobalIDs(&fdr->goal, &fdr->var, &pre); // Store all goal facts from FDR in pre
     int fact;
@@ -120,7 +132,8 @@ void pddlH2Init(pddl_h2_t *h, const pddl_fdr_t *fdr) {
         pddlISetAdd(&h->fact[fact].pre_op, h->op_goal); // Add them to the preconditions of op_goal
     }
     op->pre_size = pddlISetSize(&pre); // Update the size of the preconditions in op_goal to match
-
+    
+    // Free up the memory of 'pre' set as it is no longer needed
     pddlISetFree(&pre);
 }
 
@@ -184,11 +197,14 @@ static void initFacts(pddl_h2_t *h) {
 }
 
 static void initOps(pddl_h2_t *h) {
+    printf("\n******begin initOps******\n");
     for (int i = 0; i < h->op_size; i++) {
         int pre_size = h->op[i].pre_size;
         h->op[i].unsat = ((pre_size * pre_size)+pre_size)/2; // Number of all possible combinations of unsatisfied preconditions
+        printf("op_id: %d, pre_size: %d unsat: %d\n", i, pre_size, h->op[i].unsat);
         pddlISetInit(&h->op[i].pfact); // Initialises the set of persistant facts to an empty set
     }
+    printf("******end initOps******\n");
 }
 
 static void addInitState(pddl_h2_t *h, 
@@ -313,6 +329,7 @@ static void applyAction(pddl_h2_t *h,
         } 
         // else if q shares a variable with any precondition p, continue outer for loop for next q
         else if (sameVariable(&pre, q_var, var_limits)) {
+            printf("\nContinue because id_q: %d is of the same variable", id_q);
             continue;
         } 
         // else if all pairs of {p, q} have an h-value, add context for the persistent fact
@@ -322,6 +339,7 @@ static void applyAction(pddl_h2_t *h,
         } 
         // else, the persistent fact is not yet applicable, store in operator's pfact set
         else {
+            printf("\nAdded id_q: %d to pf-set! -", id_q);
             pddlISetAdd(&op->pfact, id_q);
         }
 
@@ -425,6 +443,7 @@ int pddlH_2(pddl_h2_t *h,
             PDDL_ISET_FOR_EACH(&fact->pre_op, op_id) { //for each action where k is a precondition
                 pddl_h2_op_t *op = h->op + op_id; //finding the action object
                 //If this was the last unsatisfied precondition for this operator, enqueue the facts in the operator's effects
+
                 if (--op->unsat == 0) {
                     applyAction(h, op, vars, h_val_k, &C);
                 }
@@ -456,6 +475,7 @@ int pddlH_2(pddl_h2_t *h,
                 pddl_h2_op_t *op = h->op + op_id;
                 printf(" op_id: %d, op_unsat: %d\n", op_id, op->unsat);
                 //If this was the last unsatisfied precondition for this operator, enqueue the facts in the operator's effects
+
                 if (--op->unsat == 0) {
                     applyAction(h, op, vars, h_val_k, &C);
                 }
@@ -467,18 +487,18 @@ int pddlH_2(pddl_h2_t *h,
             pddlISetEmpty(&pre);
             getPreconditions(h, op, vars, &pre);
             if (isPair == 0 && pddlISetHas(&op->pfact, k) && allHValuesAreSet(&pre, k, h)) {
-                printf("\napplyAdditionalContext from main singleton %d for op_id: %d", k, i);
+                printf("\napplyAdditionalContext from main singleton id: %d for op_id: %d", k, i);
                 applyAdditionalContext(h, op, k, h_val_k, &C);
                 pddlISetRm(&op->pfact, k);
                 continue;
             }
             if (isPair == 1 && pddlISetHas(&op->pfact, id_f) && allHValuesAreSet(&pre, id_f, h)) {
-                printf("\napplyAdditionalContext from main f1 %d for op_id: %d", id_f, i);
+                printf("\napplyAdditionalContext from main id_f: %d for op_id: %d", id_f, i);
                 applyAdditionalContext(h, op, id_f, h_val_k, &C);
                 pddlISetRm(&op->pfact, id_f);
             } 
             if (isPair == 1 && pddlISetHas(&op->pfact, id_q) && allHValuesAreSet(&pre, id_q, h)) {
-                printf("\napplyAdditionalContext from main f2 %d for op_id: %d", id_q, i);
+                printf("\napplyAdditionalContext from main id_q: %d for op_id: %d", id_q, i);
                 applyAdditionalContext(h, op, id_q, h_val_k, &C);
                 pddlISetRm(&op->pfact, id_q);
             }
