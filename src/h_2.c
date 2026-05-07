@@ -145,6 +145,17 @@ void pddlH2Init(pddl_h2_t *h, const pddl_fdr_t *fdr) {
     
     // Free up the memory of 'pre' set as it is no longer needed
     pddlISetFree(&pre);
+
+    h->var_limits;
+
+    printf("Printing vars global_id: ");
+    for (int i = 0; i < fdr->var.var_size; i++) {
+        int global_id = fdr->var.var[i].val[0].global_id;
+        printf(" %d - ", global_id);
+        h->var_limits[i] = global_id;
+    }
+
+    printf("\n");
 }
 
 // From two fact ids, return the id representing their pair
