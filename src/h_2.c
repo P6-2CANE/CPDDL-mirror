@@ -53,6 +53,16 @@ void pddlH2Init(pddl_h2_t *h, const pddl_fdr_t *fdr) {
     int n = fdr->var.global_id_size;
     h->n = n;
     printf("n: %d \n", n);
+    printf("VARIABLE VALUES:\n");
+    // for each variable
+    for(int i = 0; i < fdr->var.var_size; i++) {
+        printf("Variable id: %d \n", fdr->var.var[i].var_id);
+        // for all values
+        for(int j = 0; j < fdr->var.var[i].val_size; j++) {
+            printf("Value %d, global id %d: %s \n", fdr->var.var[i].val[j].val_id, fdr->var.var[i].val[j].global_id, fdr->var.var[i].val[j].name);
+        }
+        printf("\n\n");
+    }
 
     // Size of facts allocated for all facts, pairs of facts and auxiliary facts
     h->fact_size = factPair(n-2, n-1, n) + 3; // index of the last fact +1 to get the size, +2 more for auxiliary facts
