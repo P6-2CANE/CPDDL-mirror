@@ -42,6 +42,10 @@ void pddlH2Free(pddl_h2_t *h2) {
     if (h2->ops != NULL) {
         h2->ops = NULL;
     }
+
+    if (h2->global_id_to_var) {
+        FREE(h2->global_id_to_var);
+    }
 }
 
 void pddlH2Init(pddl_h2_t *h, const pddl_fdr_t *fdr) {
@@ -81,15 +85,6 @@ void pddlH2Init(pddl_h2_t *h, const pddl_fdr_t *fdr) {
     //Store reference to the operators of the fdr
     h->ops = &fdr->op;
 
-    PDDL_ISET(ops);
-
-    printf("h->ops: %d, \n", h->ops->op[0]->id); 
-    printf("Printing preconditions for ops->op[0]: ");
-    pddlFDRPartStateToGlobalIDs(&h->ops->op[0]->pre, &fdr->var, &ops);
-    for (int i = 0; i < pddlISetSize(&ops); i++) {
-        printf("%d - ", ops.s[i]);
-    }
-
     printf("\n");
     printf("op_size: %d \n", h->op_size);
     printf("op_goal index: %d \n", h->op_goal);
@@ -126,6 +121,7 @@ void pddlH2Init(pddl_h2_t *h, const pddl_fdr_t *fdr) {
         PDDL_ISET_FOR_EACH(&eff, fact) {
             printf("%d -", fact);
         }
+        pddlISetFree(&eff);
         printf("\n");
         // Set size of operator's pre_size to the number of preconditions
         op->pre_size = pddlISetSize(&pre);
@@ -158,7 +154,7 @@ void pddlH2Init(pddl_h2_t *h, const pddl_fdr_t *fdr) {
     // Free up the memory of 'pre' set as it is no longer needed
     pddlISetFree(&pre);
 
-    h->global_id_to_var = ZALLOC_ARR(int, h->n);
+    h->global_id_to_var = ZALLOC_ARR(int, n+2); //!! changed
 
     printf("Printing vars global_id: \n");
     //iterate through variables
@@ -173,7 +169,7 @@ void pddlH2Init(pddl_h2_t *h, const pddl_fdr_t *fdr) {
     }
 
     printf("Resulting global_id_to_var array: ");
-    for(int i = 0; i < h->n;i++) {
+    for(int i = 0; i < h->n+2;i++) {
         printf("%d, ",h->global_id_to_var[i]);
     }
     //[4,5,6,7,8,0,1,2,3] ordering of values according to vars
@@ -248,7 +244,7 @@ static void initOps(pddl_h2_t *h) {
         int pre_size = h->op[i].pre_size;
         h->op[i].unsat = ((pre_size * pre_size)+pre_size)/2; // Number of all possible combinations of unsatisfied preconditions
         printf("op_id: %d, pre_size: %d unsat: %d\n", i, pre_size, h->op[i].unsat);
-        pddlISetInit(&h->op[i].pfact); // Initialises the set of persistant facts to an empty set
+        //pddlISetInit(&h->op[i].pfact); // Initialises the set of persistant facts to an empty set
     }
     printf("******end initOps******\n");
 }
