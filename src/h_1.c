@@ -1,18 +1,13 @@
 #include "pddl/h1.h"
-#include "internal.h" /* Used for ZALLOC_ARR and ZEROIZE etc. */
+#include "internal.h" 
 
-//Return id of fact in h1 object
-#define FID(h, f) ((f) - (h)->fact) /* f points to element in fact array (h->fact), by subtracting the two pointers we get location of f */
-//Return value of fact
+#define FID(h, f) ((f) - (h)->fact)
 #define FVALUE(fact) (fact)->heap.key
-//Set value of fact in the heap to 'val' parameter
 #define FVALUE_SET(fact, val) do { (fact)->heap.key = val; } while(0)
-//Initialize fact to dead end
 #define FVALUE_INIT(fact) FVALUE_SET((fact), PDDL_COST_DEAD_END)
-//Check if fact has been set to value other than dead end
 #define FVALUE_IS_SET(fact) (FVALUE(fact) != PDDL_COST_DEAD_END)
 
-//Push fact onto priority queue C (or simply update if it was already set)
+// Push fact onto priority queue C (or simply update if it was already set)
 #define FPUSH(C, val, fact) \
     do { \
         if (FVALUE_IS_SET(fact)){ \
@@ -22,9 +17,7 @@
         } \
     } while (0)
 
-/* Free the memory of the fields in the h1 object that are pointers
-    But are some fields not freed like alloc and size in iset?
-*/
+// Free the memory of the fields in the h1 object that are pointers
 void pddlH1Free(pddl_h1_t *h1) {
     for (int i = 0; i < h1->fact_size; ++i) {
         pddlISetFree(&h1->fact[i].pre_op); /* Free memory for pre_op for each element in the fact array */
@@ -40,7 +33,13 @@ void pddlH1Free(pddl_h1_t *h1) {
     }
 }
 
-/* Allocate memory for h1 object */
+/* Allocate memory for h1 object. First, allocate facts and add one for empty-precondition fact and one for goal fact. 
+Then, allocate operators and add one artificial for goal. Afterwards, iterate through operators in the fdr.
+If the operator has no preconditions, associate it with the "nopre" fact we initialised earlier.
+Lastly, we initialize fact_goal and op_goal, which mark that a goal state has been achieved.
+The operator op_goal has all the actual goal facts from FDR as its preconditions,
+applying it costs nothing, and the effect is the artificial goal_fact.
+In this way, a single fact can represent that all goal facts were indeed achieved. */
 void pddlH1Init(pddl_h1_t *h, const pddl_fdr_t *fdr) {
     // Allocate facts and add one for empty-precondition fact and one for goal fact
     h->fact_size = fdr->var.global_id_size + 2; /* make space for an empty-precondition and goal fact */
@@ -48,23 +47,22 @@ void pddlH1Init(pddl_h1_t *h, const pddl_fdr_t *fdr) {
     h->fact_goal = h->fact_size - 2; /* The index of the goal fact in h->fact array */
     h->fact_nopre = h->fact_size - 1; /* The index of the empty-precondition in h->fact array */
 
-    // Allocate operators and add one artificial for goal
-    h->op_size = fdr->op.op_size + 1; /* make space for operators and one artifical goal */
-    h->op = ZALLOC_ARR(pddl_h1_op_t, h->op_size); /* Allocate memory based on the updated operator size */
-    h->op_goal = h->op_size - 1; /* The index of the goal operator in h->op array */
+    h->op_size = fdr->op.op_size + 1;
+    h->op = ZALLOC_ARR(pddl_h1_op_t, h->op_size);
+    h->op_goal = h->op_size - 1;
 
-    PDDL_ISET(pre); /* Initialize empty set for preconditions (pddl_iset_t pre = { NULL, 0, 0 }) */
+    PDDL_ISET(pre);
 
     /* Iterate through operators in the fdr */
     for (int i = 0; i < fdr->op.op_size; ++i) {
         const pddl_fdr_op_t *src = fdr->op.op[i]; /* assign operator in the fdr */
         pddl_h1_op_t *op = h->op + i; /* assign address in the operator array in the heuristic object h */
 
-        pddlFDRPartStateToGlobalIDs(&src->eff, &fdr->var, &op->eff); /* Add the global ID's of facts in effects into &op->eff */
-        op->cost = src->cost; /* Declare the cost from the fdr */
+        pddlFDRPartStateToGlobalIDs(&src->eff, &fdr->var, &op->eff);
+        op->cost = src->cost;
 
-        pddlISetEmpty(&pre); /* Empty the the pre set for each iteration */
-        pddlFDRPartStateToGlobalIDs(&src->pre, &fdr->var, &pre); /* Add the global ID's of facts in preconditions into the pre set */
+        pddlISetEmpty(&pre);
+        pddlFDRPartStateToGlobalIDs(&src->pre, &fdr->var, &pre);
         
         int fact_id;
         PDDL_ISET_FOR_EACH(&pre, fact_id) { /* for each fact in preconditions do pddlISetAdd */
@@ -82,13 +80,9 @@ void pddlH1Init(pddl_h1_t *h, const pddl_fdr_t *fdr) {
         }
     }
 
-    /* Lastly, we initialize fact_goal and op_goal, which mark that a goal state has been achieved.
-    The operator op_goal has all the actual goal facts from FDR as its preconditions,
-    applying it costs nothing, and the effect is the artificial goal_fact.
-    In this way, a single fact can represent that all goal facts were indeed achieved.*/
-    pddl_h1_op_t *op = h->op + h->op_goal; // Pointer to op_goal
-    pddlISetAdd(&op->eff, h->fact_goal); // Set its effect to fact_goal
-    op->cost = 0; // This operator should not cost anything as it is artificially inserted
+    pddl_h1_op_t *op = h->op + h->op_goal;
+    pddlISetAdd(&op->eff, h->fact_goal);
+    op->cost = 0;
 
     pddlISetEmpty(&pre); // Empty the set of preconditions used earlier (so we can reuse it)
     pddlFDRPartStateToGlobalIDs(&fdr->goal, &fdr->var, &pre); // Store all goal facts from FDR in pre
@@ -98,10 +92,10 @@ void pddlH1Init(pddl_h1_t *h, const pddl_fdr_t *fdr) {
     }    
     op->pre_size = pddlISetSize(&pre); // Update the size of the preconditions in op_goal to match
 
-    pddlISetFree(&pre); // Free memory from pre as we are now done with it
+    pddlISetFree(&pre);
 }
 
-/* Initially mark all facts as dead ends */
+// Initially mark all facts as dead ends
 static void initFacts(pddl_h1_t *h) {
     for (int i = 0; i < h->fact_size; ++i) {
         FVALUE_INIT(h->fact + i);
@@ -116,7 +110,7 @@ static void initOps(pddl_h1_t *h) {
     }
 }
 
-/* Push all facts with no preconditions onto the priority queue C */
+// Push all facts with no preconditions onto the priority queue C
 static void addInitState(pddl_h1_t *h, 
                          const int *s, 
                          const pddl_fdr_vars_t *vars, 
@@ -148,8 +142,8 @@ static void applyAction(pddl_h1_t *h,
     }
 }
 
-/*Parameters: Takes h1 object, a state s and variables from the FDR, 
-Returns: Heuristic value for state s */
+/* Parameters: Takes h1 object, a state s and variables from the FDR
+Returns: the computed heuristic value for state s, or dead end value if no path was found */
 int pddlH_1(pddl_h1_t *h,
             const int *s,
             const pddl_fdr_vars_t *vars) {
@@ -158,12 +152,10 @@ int pddlH_1(pddl_h1_t *h,
     pddl_pq_t C;
     pddlPQInit(&C);
 
-    //Initialize facts, operators and inital state for h1 object h
     initFacts(h);
     initOps(h);
     addInitState(h, s, vars, &C);
 
-    //While the priority queue C is not empty, compute h-value for s
     while (!pddlPQEmpty(&C)) {
         //Set aside memory for the value of the fact we are processing
         int h_val;
@@ -179,7 +171,6 @@ int pddlH_1(pddl_h1_t *h,
             break;
         }
 
-        //Go through each operator which has a precondition satisfiable by the current fact
         int op_id;
         PDDL_ISET_FOR_EACH(&fact->pre_op, op_id) {
             pddl_h1_op_t *op = h->op + op_id;
@@ -190,7 +181,7 @@ int pddlH_1(pddl_h1_t *h,
         }
     }
     
-    //The h-value has been computed and is stored in the heap, so we can free memory from the queue
+
     pddlPQFree(&C);
 
     //Return the computed h-value, or dead end value if no path was found
