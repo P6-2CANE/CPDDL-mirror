@@ -101,13 +101,31 @@ pddl_heur_t *pddlHeur(const pddl_heur_config_t *cfg, pddl_err_t *err)
         case PDDL_HEUR_H1:
             return pddlHeurH1(cfg->fdr, err);
         case PDDL_HEUR_H2:
-            printf("        ,d                                                              \n");
-            printf("        88                                                              \n");
-            printf("        M8MMM ,adPPYba,  88       88  ,adPPYba, ,adPPYYba, 8b,dPPYba, \n");
-            printf("        88   a8\"     \"8a 88       88 a8\"     \"\" \"      `Y8 88P'   `\"8a  \n");
-            printf("        88   8b       d8 88       88 8b          ,adPPPPP8 88       88  \n");
-            printf("        88,  \"8a,   ,a8\" \"8a,   ,a88 \"8a,   ,aa 88,    ,88 88       88  \n");
-            printf("        \"Y888 `\"YbbdP\"'   `\"YbbdP'Y8  `\"Ybbd8\"' `\"8bbdP\"Y8 88       88  \n");
+            printf("                        _,---._      __,...-----...___                  \n");
+            printf("                    _,-:::,,--.`,--''                 `'--._            \n");
+            printf("                  ,':::::/((##)):                           `-.         \n");
+            printf("                ,':.::::/  `--' :         _____.....______ (:::\\        \n");
+            printf("                /:::::::/        :__,.-''''..- - - - --  -- .`_-:\\      \n");
+            printf("               /:,:::.::|        ::.          ____....-----.....`.     \n");
+            printf("             /,:::::::/          ::::__.--'''                            \n");
+            printf("            |:::::::|           _:'                                     \n");
+            printf("            |:.:::::|         ,'                                        \n");
+            printf("            |:::::::|         |                                         \n");
+            printf("            /::::.:::|         |                                        \n");
+            printf("        __,-'::.::::::|         |    ,d                                                                      \n");
+            printf("_,.--''::::_::::::::::\\        |     00                                                                      \n");
+            printf("''::_::,:--''  `'--.:::::\\       ;   M8MMM ,adPPYba,  00       00  ,adPPYba, ,adPPYYba, 8b,dPPYba,           \n");
+            printf("-'''::::::::::::::::\\:::::`.     ;   00   a8\"     \"8a 00       00 a8\"     \"\" \"      `Y8 00P'   `\"8a   \n");
+            printf(":::::::::::::::::::::|:.::::`-..-    00   8b       d8 00       00 8b          ,adPPPPP8 00       00          \n");
+            printf("::;::::::::::::::::::|::::::::::/    00,  \"8a,   ,a8\" \"8a,   ,a00 \"8a,   ,aa 00,    ,00 00       00      \n");
+            printf(":/::::::/::::::;:::::|::::.::::/     \"Y008 `\"YbbdP\"'   `\"YbbdP'Y8  `\"Ybbd8\"' `\"8bbdP\"Y8 00       00  \n");
+            printf("(::::::/::::::/::::::):.::::::'                                         \n");
+            printf(":`:__,;::::::;:::::,':::::::'                                           \n");
+            printf(",-':::`.__,-'::::,'::::::-'                                             \n");
+            printf(":::::,-'::::::,-':::_:-'                                                \n");
+            printf("_,-':::::::,-'::_:-'                                                    \n");
+            printf("jrei::::,-_:--''                                                        \n");
+            printf("::,::--''                                                               \n");
             return pddlHeurH2(cfg->fdr, err);
         case PDDL_HEUR_HADD:
             return pddlHeurHAdd(cfg->fdr, err);
