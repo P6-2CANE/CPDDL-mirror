@@ -1,0 +1,64 @@
+/***
+ * Copyright (c)2024 Daniel Fiser <danfis@danfis.cz>. All rights reserved.
+ * This file is part of cpddl licensed under 3-clause BSD License (see file
+ * LICENSE, or https://opensource.org/licenses/BSD-3-Clause)
+ */
+
+
+#ifndef __PDDL_H2_H__
+#define __PDDL_H2_H__
+
+#include <pddl/iset.h>
+#include <pddl/fdr.h>
+#include <pddl/pq.h>
+
+#ifdef __cplusplus
+extern "C" {
+#endif /* __cplusplus */
+
+/****************** Types ******************/
+
+typedef struct pddl_h2_op {
+    pddl_iset_t eff; /* Facts in its effect */
+    int cost;       /* Cost of the operator */
+    int pre_size;   /* Number of preconditions */
+    int unsat;      /* Number of unsatisfied preconditions */
+    pddl_iset_t pfact; /* Set of persistant facts */
+    int global_id; /* id for an action */
+} pddl_h2_op_t;
+
+typedef struct pddl_h2_fact {
+    pddl_iset_t pre_op; /* Operators having this fact as its precondition */
+    pddl_pq_el_t heap; /* Connection to priority heap */
+} pddl_h2_fact_t;
+
+typedef struct pddl_h2 {
+    pddl_h2_fact_t *fact; /* List of all facts and pairs of facts */
+    int fact_size; /* How many facts and pairs of facts in this problem? */
+    int n; /* How many singleton facts in the original problem? */
+    int fact_goal; /* Index in fact array of the auxiliary fact representing that the goal is reached */
+    int fact_nopre; /* Index in fact array of the auxiliary fact representing no preconditions */
+
+    pddl_h2_op_t *op; /* Maybe: List of all operations? */
+    int op_size; /* Maybe: How many operations in this pddl? */
+    int op_goal;/* Maybe: How many operators lead to goal state? */
+    const pddl_fdr_ops_t *ops; /* Operators from the FDR */
+    int *global_id_to_var;
+} pddl_h2_t;
+
+/****************** Function declarations ******************/
+void pddlH2Init(pddl_h2_t *h, const pddl_fdr_t *fdr);
+void pddlH2Free(pddl_h2_t *h2);
+int pddlH_2(pddl_h2_t *h,
+           const int *s,
+           const pddl_fdr_vars_t *vars);
+int factPair(int x, int y, int n);
+int sameVariable(pddl_iset_t *fact_set, int q_var, int *var_limits);
+int allHValuesAreSet(pddl_iset_t *fact_set, int fact_id, pddl_h2_t *h);
+
+
+#ifdef __cplusplus
+} /* extern "C" */
+#endif /* __cplusplus */
+
+#endif /* __PDDL_h2_H__ */
