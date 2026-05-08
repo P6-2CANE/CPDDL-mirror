@@ -101,6 +101,13 @@ pddl_heur_t *pddlHeur(const pddl_heur_config_t *cfg, pddl_err_t *err)
         case PDDL_HEUR_H1:
             return pddlHeurH1(cfg->fdr, err);
         case PDDL_HEUR_H2:
+            printf("        ,d                                                              \n");
+            printf("        88                                                              \n");
+            printf("        M8MMM ,adPPYba,  88       88  ,adPPYba, ,adPPYYba, 8b,dPPYba, \n");
+            printf("        88   a8\"     \"8a 88       88 a8\"     \"\" \"      `Y8 88P'   `\"8a  \n");
+            printf("        88   8b       d8 88       88 8b          ,adPPPPP8 88       88  \n");
+            printf("        88,  \"8a,   ,a8\" \"8a,   ,a88 \"8a,   ,aa 88,    ,88 88       88  \n");
+            printf("        \"Y888 `\"YbbdP\"'   `\"YbbdP'Y8  `\"Ybbd8\"' `\"8bbdP\"Y8 88       88  \n");
             return pddlHeurH2(cfg->fdr, err);
         case PDDL_HEUR_HADD:
             return pddlHeurHAdd(cfg->fdr, err);
