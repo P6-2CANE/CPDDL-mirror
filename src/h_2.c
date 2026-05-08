@@ -65,10 +65,10 @@ void pddlH2Init(pddl_h2_t *h, const pddl_fdr_t *fdr) {
     }
 
     // Size of facts allocated for all facts, pairs of facts and auxiliary facts
-    h->fact_size = factPair(n-2, n-1, n) + 3; // index of the last fact +1 to get the size, +2 more for auxiliary facts
+    h->fact_size = factPair(n, n+1, n+2) + 1; // index of the last fact +1 to get the size, +2 more for auxiliary facts
     h->fact = ZALLOC_ARR(pddl_h2_fact_t, h->fact_size);
-    h->fact_goal = h->fact_size - 2;
-    h->fact_nopre = h->fact_size - 1;
+    h->fact_goal = h->n + 1;
+    h->fact_nopre = h->n + 2;
 
     printf("n2: %d \n", h->fact_size);
     printf("fact_goal index: %d \n", h->fact_goal);
@@ -93,10 +93,12 @@ void pddlH2Init(pddl_h2_t *h, const pddl_fdr_t *fdr) {
     printf("\n");
     printf("op_size: %d \n", h->op_size);
     printf("op_goal index: %d \n", h->op_goal);
+    printf("\n");
 
     /* Iterate through operators 'src' in the fdr and assign
     to operators 'op' in the h2 struct */
     for (int op_id = 0; op_id < fdr->op.op_size; ++op_id){
+        printf("Operator %d:\n",op_id);
         // Get pointers to src and op operators
         const pddl_fdr_op_t *src = fdr->op.op[op_id];
         pddl_h2_op_t *op = h->op + op_id;
@@ -112,10 +114,19 @@ void pddlH2Init(pddl_h2_t *h, const pddl_fdr_t *fdr) {
         // Transfer preconditions from src to 'pre' set as fact ids
         pddlFDRPartStateToGlobalIDs(&src->pre, &fdr->var, &pre);
         // For each fact in the preconditions, add the id of the current operator
+        printf("pre ");
         int fact;
         PDDL_ISET_FOR_EACH(&pre, fact) {
             pddlISetAdd(&h->fact[fact].pre_op, op_id);
+            printf("%d -", fact);
         }
+        PDDL_ISET(eff);
+        pddlFDRPartStateToGlobalIDs(&src->eff, &fdr->var, &eff);
+        printf(", eff ");
+        PDDL_ISET_FOR_EACH(&eff, fact) {
+            printf("%d -", fact);
+        }
+        printf("\n");
         // Set size of operator's pre_size to the number of preconditions
         op->pre_size = pddlISetSize(&pre);
 
@@ -127,6 +138,7 @@ void pddlH2Init(pddl_h2_t *h, const pddl_fdr_t *fdr) {
         }
 
     }
+    printf("\n");
     /* Lastly, we initialize fact_goal and op_goal, which mark that a goal state has been achieved.
     The operator op_goal has all the actual goal facts from FDR as its preconditions,
     applying it costs nothing, and the effect is the artificial goal_fact.
@@ -146,14 +158,27 @@ void pddlH2Init(pddl_h2_t *h, const pddl_fdr_t *fdr) {
     // Free up the memory of 'pre' set as it is no longer needed
     pddlISetFree(&pre);
 
-    h->var_limits;
+    h->global_id_to_var = ZALLOC_ARR(int, h->n);
 
-    printf("Printing vars global_id: ");
+    printf("Printing vars global_id: \n");
+    //iterate through variables
     for (int i = 0; i < fdr->var.var_size; i++) {
-        int global_id = fdr->var.var[i].val[0].global_id;
-        printf(" %d - ", global_id);
-        h->var_limits[i] = global_id;
+        //iterate through values
+        for (int j = 0; j < fdr->var.var[i].val_size; j++) {
+            //this prints wrong...
+            printf("Inserted %d into arr[%d]\n", i, fdr->var.var[i].val[j].global_id);
+            //insert variable id into index of global_id of its value
+            h->global_id_to_var[fdr->var.var[i].val[j].global_id]=i;
+        }
     }
+
+    printf("Resulting global_id_to_var array: ");
+    for(int i = 0; i < h->n;i++) {
+        printf("%d, ",h->global_id_to_var[i]);
+    }
+    //[4,5,6,7,8,0,1,2,3] ordering of values according to vars
+    //[0,0,0,1,1,2,2,2,2] translated into respective variables
+    //[2,2,2,2,0,0,0,1,1] global_id_to_var array
 
     printf("\n");
 }
@@ -267,7 +292,7 @@ static void applyAdditionalContext( pddl_h2_t *h, /* h is used for h->n */
         printf("pair: {%d, %d}, val: %d, FVALUE: %d - ", id_f, id_q, val, FVALUE(fact));
         /* If new path is cheaper push fact to priority queue with new value */
         if (FVALUE(fact) > val) {
-            printf("Pushed id: %d = {%d, %d} with val %d", factPair(id_f, id_q, h->n), id_f, id_q, val);
+            printf("Pushed id: %d = {%d, %d} with val %d\n", factPair(id_f, id_q, h->n), id_f, id_q, val);
             FPUSH(C, val, fact);
         }
     }
@@ -287,18 +312,6 @@ static void applyAction(pddl_h2_t *h,
                         int h_val_k,
                         pddl_pq_t *C) {
     printf("*************Begin applyAction for op_id: %d*************\n", op->global_id);
-    
-    int var_size = vars->var_size; // number of variables in fdr
-    int var_limits[var_size+1]; // empty array to hold upper limit ids of variables
-    var_limits[0] = 0; // lowest limit is always 0
-    int limit = 0; // initialize first limit to 0
-
-    printf("Here comes var data:\n");
-    for (int i = 0; i < var_size; ++i) {
-        limit += vars->var[i].val_size; // initialize first limit to 0
-        var_limits[i + 1] = limit;
-        printf(" %d - ", var_limits[i]);
-    }
     
     /* now, we can tell if a fact is in a variable i by checking that its value is 
     *  >= var_limits[i-1] and < var_limits[i]
@@ -320,20 +333,13 @@ static void applyAction(pddl_h2_t *h,
     int id_q;
     for (int i = 0; i < h->n; i++) { // iterate through all singleton facts
         id_q = i; // id of current fact q
-        int q_var = 0; // initially set variable of q to 0 (no variable)
+        int q_var = h->global_id_to_var[id_q]; // initially set variable of q to 0 (no variable)
         
-        // Iterate through var_limits
-        for (int j = 1; j < var_size + 1; j++) {
-            if (id_q >= var_limits[j-1] && id_q < var_limits[j]) { // If q falls within this variable
-                q_var = j; // i denotes the variable id locally (not necessarily the same as the global id for the var!!)
-                break; // break from loop when variable is found
-            }
-        }
-
         // now we have our q_var :D
+        printf("id_q %d variable is %d!\n", id_q, q_var);
         
         // if any of the effects of the operator share a variable with q, continue for loop for next q
-        if (sameVariable(&op->eff, q_var, var_limits)) {
+        if (sameVariable(&op->eff, q_var, h->global_id_to_var)) {
             continue;
         }
         
@@ -349,7 +355,7 @@ static void applyAction(pddl_h2_t *h,
             applyAdditionalContext(h, op, id_q, h_val_k, C);
         } 
         // else if q shares a variable with any precondition p, continue outer for loop for next q
-        else if (sameVariable(&pre, q_var, var_limits)) {
+        else if (sameVariable(&pre, q_var, h->global_id_to_var)) {
             printf("\nContinue because id_q: %d is of the same variable", id_q);
             continue;
         } 
@@ -360,7 +366,7 @@ static void applyAction(pddl_h2_t *h,
         } 
         // else, the persistent fact is not yet applicable, store in operator's pfact set
         else {
-            printf("\nAdded id_q: %d to pf-set! -", id_q);
+            printf("\nAdded id_q: %d to pf-set! -\n", id_q);
             pddlISetAdd(&op->pfact, id_q);
         }
 
@@ -405,10 +411,10 @@ int allHValuesAreSet(pddl_iset_t *fact_set, int fact_id, pddl_h2_t *h) {
 }
 
 /*Checks if any fact in a set shares a variable q_var */
-int sameVariable(pddl_iset_t *fact_set, int q_var, int *var_limits) {
+int sameVariable(pddl_iset_t *fact_set, int var_q, int *global_id_to_var) {
     int fact_id;
     PDDL_ISET_FOR_EACH(fact_set, fact_id) {
-        if(fact_id >= var_limits[q_var-1] && fact_id < var_limits[q_var]) {
+        if(global_id_to_var[fact_id]==var_q) {
             return 1;
         }
     }
@@ -472,6 +478,11 @@ int pddlH_2(pddl_h2_t *h,
         } else { //If k is a pair
             factPairReverse(k, h->n, &id_f, &id_q); //Extracting ids of f and q from k
             printf("Expanded f and q: %d, %d from %d \n", id_f, id_q, k);
+
+            if (id_f == h->fact_goal || id_q == h->fact_goal) {
+                printf("Goal found!");
+                break;
+            }
             
             isPair = 1;
             pddl_h2_fact_t *fact_f = h->fact + id_f; //Finding the fact objects of f and q
