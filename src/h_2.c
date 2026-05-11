@@ -385,9 +385,6 @@ int pddlH_2(pddl_h2_t *h,
 
         if (k < h->n || k == h->fact_nopre) { 
             op_id = 0;
-            PDDL_ISET_FOR_EACH(&fact->pre_op, op_id) { //for each action where {f, q} is a precondition
-                pddl_h2_op_t *op = h->op + op_id;
-            }
 
             PDDL_ISET_FOR_EACH(&fact->pre_op, op_id) { //for each action where k is a precondition
                 pddl_h2_op_t *op = h->op + op_id; //finding the action object
@@ -410,14 +407,6 @@ int pddlH_2(pddl_h2_t *h,
 
             pddlISetIntersect2(&intersec, &fact_f->pre_op, &fact_q->pre_op); //Finding the intersection (intersec is emptied by PDDLISetIntersect2) 
             op_id = 0;
-            PDDL_ISET_FOR_EACH(&fact_f->pre_op, op_id) { //for each action where {f, q} is a precondition
-                pddl_h2_op_t *op = h->op + op_id;
-            }
-            op_id = 0;
-            PDDL_ISET_FOR_EACH(&fact_q->pre_op, op_id) { //for each action where {f, q} is a precondition
-                pddl_h2_op_t *op = h->op + op_id;
-            }
-            op_id = 0;  
             PDDL_ISET_FOR_EACH(&intersec, op_id) { //for each action where {f, q} is a precondition
                 pddl_h2_op_t *op = h->op + op_id;
                 //If this was the last unsatisfied precondition for this operator, enqueue the facts in the operator's effects
