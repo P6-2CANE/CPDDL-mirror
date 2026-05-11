@@ -61,9 +61,8 @@ void pddlH2Init(pddl_h2_t *h, const pddl_fdr_t *fdr) {
     // Size of facts allocated for all facts, pairs of facts and auxiliary facts
     h->fact_size = factPair(n, n+1, n+2) + 1; // index of the last fact +1 to get the size, +2 more for auxiliary facts
     h->fact = ZALLOC_ARR(pddl_h2_fact_t, h->fact_size);
-    h->fact_goal = h->n + 1;
-    h->fact_nopre = h->n + 2;
-
+    h->fact_goal = h->n;
+    h->fact_nopre = h->n + 1;
 
     // Only original operators are set up
     h->op_size = fdr->op.op_size + 1;
@@ -176,8 +175,6 @@ void factPairReverse(int id, int n, int *x, int *y) {
     
     // Using floor instead of round to not jump to next integer
     x_val = (int)floor((2.0 * n - 1.0 - x_sqrt) / 2.0);
-
-    
     *x = (int) x_val;
 
     // Calculate y-value offset
@@ -186,9 +183,8 @@ void factPairReverse(int id, int n, int *x, int *y) {
 
     // printf("Fact pair reverse calculation: y_val: %d \n", y_val);
     
-
     PANIC_IF(*x < 0 || *y < 0, "Fact pair reverse calculation resulted in out-of-bounds value");
-    PANIC_IF(*y >= n, "y is too big! Fact pair reverse calculation resulted in out-of-bounds value");
+    PANIC_IF(*y >= n+2, "y is too big! Fact pair reverse calculation resulted in out-of-bounds value");
 }
 
 static void initFacts(pddl_h2_t *h) {
