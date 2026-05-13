@@ -224,14 +224,19 @@ static void applyAdditionalContext( pddl_h2_t *h, /* h is used for h->n */
     int val = op->cost + h_val_k; /* heuristic value of the new path */
     
     int id_f; /* id of the facts in eff */
+    printf("\n");
     PDDL_ISET_FOR_EACH(&op->eff, id_f) { /* iterating through the facts of eff */
         pddl_h2_fact_t *fact; /* local variable to hold the fact */
 
         /* finding the fact, using the ID calculated with factPair
         */
         fact = h->fact + factPair(id_f, id_q, h->n);
+        printf("\n");
+        printf("pair: {%d,%d}, val: %d, FVALUE: %d - ", id_f, id_q, val, FVALUE(fact));
         /* If new path is cheaper push fact to priority queue with new value */
         if (FVALUE(fact) > val) {
+            printf("\n");
+            printf("Added id %d = {%d,%d} with val %d", factPair(id_f,id_q, h->n),id_f, id_q, val);
             FPUSH(C, val, fact);
         }
     }
@@ -285,23 +290,28 @@ static void applyAction(pddl_h2_t *h,
         // We find all preconditions for the operator:
         pddlISetEmpty(&pre);
         getPreconditions(h, op, vars, &pre);
-        
+        printf("\n");
         // if q is in the precondition, add context for the prevail fact
         if (pddlISetHas(&pre, id_q)) {
+            printf("Prevailing fact!");
             applyAdditionalContext(h, op, id_q, h_val_k, C);
         } 
         // else if q shares a variable with any precondition p, continue outer for loop for next q
-        else if (sameVariable(&pre, q_var, h->global_id_to_var)) {
-            continue;
-        } 
+        /*else if (sameVariable(&pre, q_var, h->global_id_to_var)) {
+            printf("Continue because mutex");
+            //Comment put line below for deoptimization of precondition mutex
+            //continue;
+        }*/
         // else if all pairs of {p, q} have an h-value, add context for the persistent fact
         else if (allHValuesAreSet(&pre, id_q, h)) {
+            printf("Persistent fact");
             applyAdditionalContext(h, op, id_q, h_val_k, C);
         } 
         // else, the persistent fact is not yet applicable, store in operator's pfact set
         else {
+            printf("Added value to pf set (if we had one)");
             //Comment out line below to remove optimisation for a.pf
-            //pddlISetAdd(&op->pfact, id_q);
+            pddlISetAdd(&op->pfact, id_q);
         }
 
     }
@@ -412,24 +422,26 @@ int pddlH_2(pddl_h2_t *h,
                 }
             }
         }
-
+        printf("\n");
         for (int i = 0; i < h->op_size; i++) {
             pddl_h2_op_t *op = h->op + i;
             pddlISetEmpty(&pre);
             getPreconditions(h, op, vars, &pre);
             //Without optimisation for a.pf
-            if (isPair == 0 && allHValuesAreSet(&pre, k, h)) {
+            /*if (isPair == 0 && allHValuesAreSet(&pre, k, h)) {
+                printf("Applied additional context for singleton:");
                 applyAdditionalContext(h, op, k, h_val_k, &C);
                 continue;
             }
             if (isPair == 1 && allHValuesAreSet(&pre, id_f, h)) {
+                printf("Applied additional context for id_f:");
                 applyAdditionalContext(h, op, id_f, h_val_k, &C);
             } 
             if (isPair == 1 && allHValuesAreSet(&pre, id_q, h)) {
+                printf("Applied additional context for id_q:");
                 applyAdditionalContext(h, op, id_q, h_val_k, &C);
-            }
+            }*/
 
-            /* With optimisation for a.pf
             if (isPair == 0 && pddlISetHas(&op->pfact, k) && allHValuesAreSet(&pre, k, h)) {
                 applyAdditionalContext(h, op, k, h_val_k, &C);
                 pddlISetRm(&op->pfact, k);
@@ -443,7 +455,6 @@ int pddlH_2(pddl_h2_t *h,
                 applyAdditionalContext(h, op, id_q, h_val_k, &C);
                 pddlISetRm(&op->pfact, id_q);
             }
-            */
         }
     }
     
