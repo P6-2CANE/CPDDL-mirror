@@ -197,7 +197,6 @@ static void initOps(pddl_h2_t *h) {
     for (int i = 0; i < h->op_size; i++) {
         int pre_size = h->op[i].pre_size;
         h->op[i].unsat = ((pre_size * pre_size)+pre_size)/2; // Number of all possible combinations of unsatisfied preconditions
-        //pddlISetInit(&h->op[i].pfact); // Initialises the set of persistant facts to an empty set
     }
 }
 
@@ -301,7 +300,8 @@ static void applyAction(pddl_h2_t *h,
         } 
         // else, the persistent fact is not yet applicable, store in operator's pfact set
         else {
-            pddlISetAdd(&op->pfact, id_q);
+            //Comment out line below to remove optimisation for a.pf
+            //pddlISetAdd(&op->pfact, id_q);
         }
 
     }
@@ -417,6 +417,19 @@ int pddlH_2(pddl_h2_t *h,
             pddl_h2_op_t *op = h->op + i;
             pddlISetEmpty(&pre);
             getPreconditions(h, op, vars, &pre);
+            //Without optimisation for a.pf
+            if (isPair == 0 && allHValuesAreSet(&pre, k, h)) {
+                applyAdditionalContext(h, op, k, h_val_k, &C);
+                continue;
+            }
+            if (isPair == 1 && allHValuesAreSet(&pre, id_f, h)) {
+                applyAdditionalContext(h, op, id_f, h_val_k, &C);
+            } 
+            if (isPair == 1 && allHValuesAreSet(&pre, id_q, h)) {
+                applyAdditionalContext(h, op, id_q, h_val_k, &C);
+            }
+
+            /* With optimisation for a.pf
             if (isPair == 0 && pddlISetHas(&op->pfact, k) && allHValuesAreSet(&pre, k, h)) {
                 applyAdditionalContext(h, op, k, h_val_k, &C);
                 pddlISetRm(&op->pfact, k);
@@ -430,6 +443,7 @@ int pddlH_2(pddl_h2_t *h,
                 applyAdditionalContext(h, op, id_q, h_val_k, &C);
                 pddlISetRm(&op->pfact, id_q);
             }
+            */
         }
     }
     
