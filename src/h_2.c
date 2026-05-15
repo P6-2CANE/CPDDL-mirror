@@ -277,12 +277,8 @@ static void applyAction(pddl_h2_t *h,
         pddlISetEmpty(&pre);
         getPreconditions(h, op, vars, &pre);
         
-        
-        if (op->global_id==h->op_goal) {
-            break;
-        }
         // if q is in the precondition, add context for the prevail fact
-        else if (pddlISetHas(&pre, id_q)) {
+        if (pddlISetHas(&pre, id_q)) {
             applyAdditionalContext(h, op, id_q, h_val_k, C);
         } 
         // else if q shares a variable with any precondition p, continue outer for loop for next q
@@ -322,7 +318,6 @@ int allHValuesAreSet(pddl_iset_t *fact_set, int fact_id, pddl_h2_t *h) {
     int pre_fact; //pre_fact = f in the pair f,q
     int pair_id;
     PDDL_ISET_FOR_EACH(fact_set, pre_fact) {
-        //should this be done if the precondition is nopre??
         pair_id = factPair(pre_fact, fact_id, h->n);
 
         pddl_h2_fact_t *fact = &h->fact[pair_id];
@@ -429,12 +424,9 @@ int pddlH_2(pddl_h2_t *h,
 
     pddlPQFree(&C); //Free priority queue C
     
-    int heur_value;
     if (FVALUE_IS_SET(h->fact + h->fact_goal)) {
-        heur_value = FVALUE(h->fact + h->fact_goal);
-        return heur_value;
+        return FVALUE(h->fact + h->fact_goal);
     } else {
-        heur_value = PDDL_COST_DEAD_END;
-        return heur_value;
+        return PDDL_COST_DEAD_END;
     }
 }
