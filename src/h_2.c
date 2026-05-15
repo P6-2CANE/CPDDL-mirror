@@ -267,7 +267,7 @@ static void applyAction(pddl_h2_t *h,
         // now we have our q_var :D
         
         // if any of the effects of the operator share a variable with q, continue for loop for next q
-        if (sameVariable(&op->eff, q_var, id_q, h->global_id_to_var)) {
+        if (sameVariable(&op->eff, q_var, h->global_id_to_var)) {
             continue;
         }
         
@@ -286,7 +286,7 @@ static void applyAction(pddl_h2_t *h,
             applyAdditionalContext(h, op, id_q, h_val_k, C);
         } 
         // else if q shares a variable with any precondition p, continue outer for loop for next q
-        else if (sameVariable(&pre, q_var, id_q, h->global_id_to_var)) {
+        else if (sameVariable(&pre, q_var, h->global_id_to_var)) {
             continue;
         } 
         // else if all pairs of {p, q} have an h-value, add context for the persistent fact
@@ -334,7 +334,7 @@ int allHValuesAreSet(pddl_iset_t *fact_set, int fact_id, pddl_h2_t *h) {
 }
 
 /*Checks if any fact in a set shares a variable q_var */
-int sameVariable(pddl_iset_t *fact_set, int var_q, int id_q, int *global_id_to_var) {
+int sameVariable(pddl_iset_t *fact_set, int var_q, int *global_id_to_var) {
     int fact_id;
     PDDL_ISET_FOR_EACH(fact_set, fact_id) {
         if(global_id_to_var[fact_id]==var_q) {

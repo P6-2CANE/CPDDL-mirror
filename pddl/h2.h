@@ -42,7 +42,6 @@ typedef struct pddl_h2 {
     pddl_h2_op_t *op; /* Maybe: List of all operations? */
     int op_size; /* Maybe: How many operations in this pddl? */
     int op_goal;/* Maybe: How many operators lead to goal state? */
-    pddl_iset_t op_goal_pre; // preconditions of the goal operator
     const pddl_fdr_ops_t *ops; /* Operators from the FDR */
     int *global_id_to_var;
 } pddl_h2_t;
@@ -54,7 +53,7 @@ int pddlH_2(pddl_h2_t *h,
            const int *s,
            const pddl_fdr_vars_t *vars);
 int factPair(int x, int y, int n);
-int sameVariable(pddl_iset_t *fact_set, int q_var, int id_q, int *var_limits);
+int sameVariable(pddl_iset_t *fact_set, int q_var, int *var_limits);
 int allHValuesAreSet(pddl_iset_t *fact_set, int fact_id, pddl_h2_t *h);
 
 
