@@ -250,7 +250,7 @@ static void applyAction(pddl_h2_t *h,
                         const pddl_fdr_vars_t *vars,
                         int h_val_k,
                         pddl_pq_t *C) {
-    
+    //If goal op is reached, push the goal fact to the queue
     if (op->global_id == h->op_goal) {
         if (FVALUE(h->fact + h->fact_goal) > op->cost + h_val_k) {
             FPUSH(C, op->cost + h_val_k, h->fact + h->fact_goal);
@@ -267,7 +267,7 @@ static void applyAction(pddl_h2_t *h,
         // now we have our q_var :D
         
         // if any of the effects of the operator share a variable with q, continue for loop for next q
-        if (sameVariable(&op->eff, q_var, id_q, h->global_id_to_var)) {
+        if (sameVariable(&op->eff, q_var, h->global_id_to_var)) {
             continue;
         }
         
@@ -277,16 +277,12 @@ static void applyAction(pddl_h2_t *h,
         pddlISetEmpty(&pre);
         getPreconditions(h, op, vars, &pre);
         
-        
-        if (op->global_id==h->op_goal) {
-            break;
-        }
         // if q is in the precondition, add context for the prevail fact
-        else if (pddlISetHas(&pre, id_q)) {
+        if (pddlISetHas(&pre, id_q)) {
             applyAdditionalContext(h, op, id_q, h_val_k, C);
         } 
         // else if q shares a variable with any precondition p, continue outer for loop for next q
-        else if (sameVariable(&pre, q_var, id_q, h->global_id_to_var)) {
+        else if (sameVariable(&pre, q_var, h->global_id_to_var)) {
             continue;
         } 
         // else if all pairs of {p, q} have an h-value, add context for the persistent fact
@@ -322,7 +318,6 @@ int allHValuesAreSet(pddl_iset_t *fact_set, int fact_id, pddl_h2_t *h) {
     int pre_fact; //pre_fact = f in the pair f,q
     int pair_id;
     PDDL_ISET_FOR_EACH(fact_set, pre_fact) {
-        //should this be done if the precondition is nopre??
         pair_id = factPair(pre_fact, fact_id, h->n);
 
         pddl_h2_fact_t *fact = &h->fact[pair_id];
@@ -334,7 +329,7 @@ int allHValuesAreSet(pddl_iset_t *fact_set, int fact_id, pddl_h2_t *h) {
 }
 
 /*Checks if any fact in a set shares a variable q_var */
-int sameVariable(pddl_iset_t *fact_set, int var_q, int id_q, int *global_id_to_var) {
+int sameVariable(pddl_iset_t *fact_set, int var_q, int *global_id_to_var) {
     int fact_id;
     PDDL_ISET_FOR_EACH(fact_set, fact_id) {
         if(global_id_to_var[fact_id]==var_q) {
@@ -429,12 +424,9 @@ int pddlH_2(pddl_h2_t *h,
 
     pddlPQFree(&C); //Free priority queue C
     
-    int heur_value;
     if (FVALUE_IS_SET(h->fact + h->fact_goal)) {
-        heur_value = FVALUE(h->fact + h->fact_goal);
-        return heur_value;
+        return FVALUE(h->fact + h->fact_goal);
     } else {
-        heur_value = PDDL_COST_DEAD_END;
-        return heur_value;
+        return PDDL_COST_DEAD_END;
     }
 }
