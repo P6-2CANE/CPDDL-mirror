@@ -282,9 +282,9 @@ static void applyAction(pddl_h2_t *h,
             applyAdditionalContext(h, op, id_q, h_val_k, C);
         } 
         // else if q shares a variable with any precondition p, continue outer for loop for next q
-        /* else if (sameVariable(&pre, q_var, h->global_id_to_var)) {
+        else if (sameVariable(&pre, q_var, h->global_id_to_var)) {
             continue;
-        }  */
+        } 
         // else if all pairs of {p, q} have an h-value, add context for the persistent fact
         else if (allHValuesAreSet(&pre, id_q, h)) {
             applyAdditionalContext(h, op, id_q, h_val_k, C);
