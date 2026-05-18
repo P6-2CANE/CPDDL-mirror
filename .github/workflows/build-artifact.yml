@@ -1,0 +1,25 @@
+name: Build-artifact
+
+on:
+    workflow_dispatch:
+
+jobs:
+    build:
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v3
+
+            - name: Copy makefile config
+              run: cp Makefile.config.tpl Makefile.config
+
+            - name: Build binary
+              run: make bin
+
+            - name: Upload binaries as artifacts
+              uses: actions/upload-artifact@v3
+              with:
+                  name: pddl-binaries
+                  path: |
+                      ./bin/pddl
+                  retention-days: 30
+              
