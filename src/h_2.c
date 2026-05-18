@@ -33,7 +33,7 @@ void pddlH2Free(pddl_h2_t *h2) {
 
     for (int i = 0; i < h2->op_size; ++i) {
         pddlISetFree(&h2->op[i].eff);
-        pddlISetFree(&h2->op[i].pfact);
+        //pddlISetFree(&h2->op[i].pfact);
     }
     if (h2->op != NULL) {
         FREE(h2->op);
@@ -282,17 +282,17 @@ static void applyAction(pddl_h2_t *h,
             applyAdditionalContext(h, op, id_q, h_val_k, C);
         } 
         // else if q shares a variable with any precondition p, continue outer for loop for next q
-        else if (sameVariable(&pre, q_var, h->global_id_to_var)) {
+        /* else if (sameVariable(&pre, q_var, h->global_id_to_var)) {
             continue;
-        } 
+        }  */
         // else if all pairs of {p, q} have an h-value, add context for the persistent fact
         else if (allHValuesAreSet(&pre, id_q, h)) {
             applyAdditionalContext(h, op, id_q, h_val_k, C);
         } 
         // else, the persistent fact is not yet applicable, store in operator's pfact set
-        else {
+        /* else {
             pddlISetAdd(&op->pfact, id_q);
-        }
+        } */
 
     }
     pddlISetFree(&pre);
@@ -400,9 +400,25 @@ int pddlH_2(pddl_h2_t *h,
 
         for (int i = 0; i < h->op_size-1; i++) {
             pddl_h2_op_t *op = h->op + i;
+            if (op->unsat != 0) {
+                continue;
+            }
+
             pddlISetEmpty(&pre);
             getPreconditions(h, op, vars, &pre);
-            if (isPair == 0 && pddlISetHas(&op->pfact, k) && allHValuesAreSet(&pre, k, h)) {
+            
+            if (isPair == 0 && allHValuesAreSet(&pre, k, h)) {
+                applyAdditionalContext(h, op, k, h_val_k, &C);
+                continue;
+            }
+            if (isPair == 1 && allHValuesAreSet(&pre, id_f, h)) {
+                applyAdditionalContext(h, op, id_f, h_val_k, &C);
+            } 
+            if (isPair == 1 && allHValuesAreSet(&pre, id_q, h)) {
+                applyAdditionalContext(h, op, id_q, h_val_k, &C);
+            }
+
+            /* if (isPair == 0 && pddlISetHas(&op->pfact, k) && allHValuesAreSet(&pre, k, h)) {
                 applyAdditionalContext(h, op, k, h_val_k, &C);
                 pddlISetRm(&op->pfact, k);
                 continue;
@@ -414,7 +430,7 @@ int pddlH_2(pddl_h2_t *h,
             if (isPair == 1 && pddlISetHas(&op->pfact, id_q) && allHValuesAreSet(&pre, id_q, h)) {
                 applyAdditionalContext(h, op, id_q, h_val_k, &C);
                 pddlISetRm(&op->pfact, id_q);
-            }
+            } */
         }
     }
     
