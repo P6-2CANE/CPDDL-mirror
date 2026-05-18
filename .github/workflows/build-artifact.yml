@@ -16,7 +16,7 @@ jobs:
               run: make bin
 
             - name: Upload binaries as artifacts
-              uses: actions/upload-artifact@v3
+              uses: actions/upload-artifact@v7
               with:
                   name: pddl-binaries
                   path: |
