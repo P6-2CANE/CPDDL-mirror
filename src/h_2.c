@@ -235,6 +235,7 @@ static void applyAdditionalContext( pddl_h2_t *h, /* h is used for h->n */
     int val = op->cost + h_val_k; /* heuristic value of the new path */
     
     int id_f; /* id of the facts in eff */
+    printf("    added context: ");
     PDDL_ISET_FOR_EACH(&op->eff, id_f) { /* iterating through the facts of eff */
         pddl_h2_fact_t *fact; /* local variable to hold the fact */
 
@@ -243,9 +244,11 @@ static void applyAdditionalContext( pddl_h2_t *h, /* h is used for h->n */
         fact = h->fact + factPair(id_f, id_q, h->n);
         /* If new path is cheaper push fact to priority queue with new value */
         if (FVALUE(fact) > val) {
+            printf("(%d, %d): val %d, ", id_f, id_q, val);
             FPUSH(C, val, fact);
         }
     }
+    printf("\n");
 }
 
 void getPreconditions(  pddl_h2_t *h, 
