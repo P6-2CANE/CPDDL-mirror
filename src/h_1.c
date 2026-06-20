@@ -48,10 +48,18 @@ void pddlH1Init(pddl_h1_t *h, const pddl_fdr_t *fdr) {
     h->fact_goal = h->fact_size - 2; /* The index of the goal fact in h->fact array */
     h->fact_nopre = h->fact_size - 1; /* The index of the empty-precondition in h->fact array */
 
+    printf("\n\n!INITIALISING H2!\n\n");
+    printf("total number of facts: %d \n", h->fact_size);
+    printf("fact_goal index: %d \n", h->fact_goal);
+    printf("no-pre index: %d \n", h->fact_nopre);
+
     // Allocate operators and add one artificial for goal
     h->op_size = fdr->op.op_size + 1; /* make space for operators and one artifical goal */
     h->op = ZALLOC_ARR(pddl_h1_op_t, h->op_size); /* Allocate memory based on the updated operator size */
     h->op_goal = h->op_size - 1; /* The index of the goal operator in h->op array */
+
+    printf("Number of actions: %d\n",h->op_size);
+    printf("op_goal index: %d\n\n",h->op_goal);
 
     PDDL_ISET(pre); /* Initialize empty set for preconditions (pddl_iset_t pre = { NULL, 0, 0 }) */
 
@@ -62,13 +70,19 @@ void pddlH1Init(pddl_h1_t *h, const pddl_fdr_t *fdr) {
 
         pddlFDRPartStateToGlobalIDs(&src->eff, &fdr->var, &op->eff); /* Add the global ID's of facts in effects into &op->eff */
         op->cost = src->cost; /* Declare the cost from the fdr */
+        
 
         pddlISetEmpty(&pre); /* Empty the the pre set for each iteration */
         pddlFDRPartStateToGlobalIDs(&src->pre, &fdr->var, &pre); /* Add the global ID's of facts in preconditions into the pre set */
-        
+        printf("Operator %d has preconditions ", i);
         int fact_id;
         PDDL_ISET_FOR_EACH(&pre, fact_id) { /* for each fact in preconditions do pddlISetAdd */
             pddlISetAdd(&h->fact[fact_id].pre_op, i); /* Insert id of operator into fact, maybe: make link between fact and operator */
+            printf("%d, ", fact_id);
+        }
+        printf(" and effects ");
+        PDDL_ISET_FOR_EACH(&op->eff, fact_id) { /* for each fact in preconditions do pddlISetAdd */
+            printf("%d, ", fact_id);
         }
         op->pre_size = pddlISetSize(&pre); /* Set size/number of facts in precondition */
 
@@ -80,7 +94,9 @@ void pddlH1Init(pddl_h1_t *h, const pddl_fdr_t *fdr) {
             /* Operator now technically has one precondition */
             op->pre_size = 1;
         }
+        printf("\n");
     }
+    printf("\n");
 
     /* Lastly, we initialize fact_goal and op_goal, which mark that a goal state has been achieved.
     The operator op_goal has all the actual goal facts from FDR as its preconditions,
@@ -99,6 +115,16 @@ void pddlH1Init(pddl_h1_t *h, const pddl_fdr_t *fdr) {
     op->pre_size = pddlISetSize(&pre); // Update the size of the preconditions in op_goal to match
 
     pddlISetFree(&pre); // Free memory from pre as we are now done with it
+
+    for (int i = 0; i < fdr->var.var_size; i++) {
+        printf("Variable id: %d \n", fdr->var.var[i].var_id);
+        //iterate through values
+        for (int j = 0; j < fdr->var.var[i].val_size; j++) {
+            //insert variable id into index of global_id of its value
+            printf("Value %d, global id %d: %s \n", fdr->var.var[i].val[j].val_id, fdr->var.var[i].val[j].global_id, fdr->var.var[i].val[j].name);
+        }
+        printf("\n\n");
+    }
 }
 
 /* Initially mark all facts as dead ends */
@@ -121,11 +147,14 @@ static void addInitState(pddl_h1_t *h,
                          const int *s, 
                          const pddl_fdr_vars_t *vars, 
                          pddl_pq_t *C) {
+    printf("\nInitial state: ");
     for (int i = 0; i < vars->var_size; ++i) {
         int fact_id = vars->var[i].val[s[i]].global_id;
+        printf("%d, ", fact_id);
         FPUSH(C, 0, h->fact + fact_id);
     }
     FPUSH(C, 0, h->fact + h->fact_nopre);
+    printf("\n");
 }
 
 /* Apply effects of fully satisfied operators, enqueue all facts that are now achievable */
@@ -140,12 +169,15 @@ static void applyAction(pddl_h1_t *h,
     if its h-value in priority queue C is higher than the newly computed value,
     push this new h-value to C */ 
     int fact_id;
+    printf("Applying action: added ");
     PDDL_ISET_FOR_EACH(&op->eff, fact_id) {
         pddl_h1_fact_t *fact = h->fact + fact_id;
         if (FVALUE(fact) > h_val) {
+            printf("%d: val %d, ", fact_id, h_val);
             FPUSH(C, h_val, fact);
         }
     }
+    printf("\n\n");
 }
 
 /*Parameters: Takes h1 object, a state s and variables from the FDR, 
@@ -163,19 +195,28 @@ int pddlH_1(pddl_h1_t *h,
     initOps(h);
     addInitState(h, s, vars, &C);
 
+    printf("\n\nSTARTING HEURISTIC COMPUTATION:\n\n");
+    int count = 0;
+
     //While the priority queue C is not empty, compute h-value for s
     while (!pddlPQEmpty(&C)) {
+        printf("--------------------------------\n");
+        printf("ITERATION %d: Length of C: %d\n", count, C.bucket_queue.size);
         //Set aside memory for the value of the fact we are processing
         int h_val;
         //Pop the lowest value element from the queue
         pddl_pq_el_t *el = pddlPQPop(&C, &h_val);
         //Get pointer to the outer container (entire fact which the popped element references)
         pddl_h1_fact_t *fact = pddl_container_of(el, pddl_h1_fact_t, heap);
-
+    
         //Get ID of the fact (?)
         int k = FID(h, fact);
+
+        printf("Popped element k with id %d and h-value of %d.\n\n", k, h_val);
+
         //If this fact is a goal fact, break from the while loop
         if (k == h->fact_goal) {
+            printf("\n\nFound goal! k = %d\n", k);
             break;
         }
 
@@ -183,11 +224,16 @@ int pddlH_1(pddl_h1_t *h,
         int op_id;
         PDDL_ISET_FOR_EACH(&fact->pre_op, op_id) {
             pddl_h1_op_t *op = h->op + op_id;
+            printf("Action %d has k as precondition. Unsat was %d ", op_id, op->unsat);
             //If this was the last unsatisfied precondition for this operator, enqueue the facts in the operator's effects
             if (--op->unsat == 0) {
+                printf("and decremented to %d, so we apply the action\n\n", op->unsat);
                 applyAction(h, op, h_val, &C);
+            } else {
+                printf("and decremented to %d\n\n", op->unsat);
             }
         }
+        count++;
     }
     
     //The h-value has been computed and is stored in the heap, so we can free memory from the queue
@@ -195,8 +241,11 @@ int pddlH_1(pddl_h1_t *h,
 
     //Return the computed h-value, or dead end value if no path was found
     if (FVALUE_IS_SET(h->fact + h->fact_goal)) {
-        return FVALUE(h->fact + h->fact_goal);
+        int heur_val = FVALUE(h->fact + h->fact_goal);
+        printf("Returning heuristic value: %d\n\n", heur_val);
+        return heur_val;
     } else {
+        printf("Returning dead end\n\n");
         return PDDL_COST_DEAD_END;
     } 
 }
