@@ -195,8 +195,11 @@ int pddlH_1(pddl_h1_t *h,
 
     //Return the computed h-value, or dead end value if no path was found
     if (FVALUE_IS_SET(h->fact + h->fact_goal)) {
-        return FVALUE(h->fact + h->fact_goal);
+        int heur_val = FVALUE(h->fact + h->fact_goal);
+        printf("Found heuristic value %d\n\n", heur_val);
+        return heur_val;
     } else {
+        printf("Found dead end\n\n");
         return PDDL_COST_DEAD_END;
     } 
 }

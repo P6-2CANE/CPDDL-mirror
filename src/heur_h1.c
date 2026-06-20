@@ -25,6 +25,12 @@ static int heurEstimate(pddl_heur_t *_h,
                         const pddl_fdr_state_space_t *state_space)
 {
     pddl_heur_h1_t *h = pddl_container_of(_h, pddl_heur_h1_t, heur);
+    printf("\nCalling heuristic function for search node of state ");
+    for (int i = 0; i < node->var_size; i++) {
+        int fact_id = node->state[i];
+        printf("%d, ", fact_id);
+    }
+    printf("\nThe g-value is %d\n", node->g_value);
     return pddlH_1(&h->h1, node->state, &h->fdr_vars);
 }
 
