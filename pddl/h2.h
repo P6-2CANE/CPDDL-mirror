@@ -19,30 +19,30 @@ extern "C" {
 /****************** Types ******************/
 
 typedef struct pddl_h2_op {
-    pddl_iset_t eff; /* Facts in its effect */
-    int cost;       /* Cost of the operator */
-    int pre_size;   /* Number of preconditions */
-    int unsat;      /* Number of unsatisfied preconditions */
-    pddl_iset_t pfact; /* Set of persistant facts */
-    int global_id; /* id for an action */
+    pddl_iset_t eff;
+    int cost;
+    int pre_size;
+    int unsat;
+    pddl_iset_t pfact;
+    int global_id;
 } pddl_h2_op_t;
 
 typedef struct pddl_h2_fact {
-    pddl_iset_t pre_op; /* Operators having this fact as its precondition */
-    pddl_pq_el_t heap; /* Connection to priority heap */
+    pddl_iset_t pre_op;
+    pddl_pq_el_t heap;
 } pddl_h2_fact_t;
 
 typedef struct pddl_h2 {
-    pddl_h2_fact_t *fact; /* List of all facts and pairs of facts */
-    int fact_size; /* How many facts and pairs of facts in this problem? */
-    int n; /* How many singleton facts in the original problem? */
-    int fact_goal; /* Index in fact array of the auxiliary fact representing that the goal is reached */
-    int fact_nopre; /* Index in fact array of the auxiliary fact representing no preconditions */
+    pddl_h2_fact_t *fact;
+    int fact_size;
+    int n;
+    int fact_goal;
+    int fact_nopre;
 
-    pddl_h2_op_t *op; /* Maybe: List of all operations? */
-    int op_size; /* Maybe: How many operations in this pddl? */
-    int op_goal;/* Maybe: How many operators lead to goal state? */
-    const pddl_fdr_ops_t *ops; /* Operators from the FDR */
+    pddl_h2_op_t *op;
+    int op_size;
+    int op_goal;
+    const pddl_fdr_ops_t *ops;
     int *global_id_to_var;
 } pddl_h2_t;
 

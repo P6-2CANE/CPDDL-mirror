@@ -1,19 +1,19 @@
 #include "pddl/h2.h"
-#include "internal.h" /* used for ZALLOC etc. */
-#include "_heur.h" /* used for pddl_heur_t */
+#include "internal.h"
+#include "_heur.h"
 
 typedef struct pddl_heur_h2 {
-    pddl_heur_t heur; /* Maybe: The heuristic values */
-    pddl_fdr_vars_t fdr_vars; /* Maybe: The variables/facts from the fdr */
-    pddl_h2_t h2; /* relevant facts and operators from fdr */
+    pddl_heur_t heur;
+    pddl_fdr_vars_t fdr_vars;
+    pddl_h2_t h2;
 } pddl_heur_h2_t;
 
 static void heurDel(pddl_heur_t *_h) {
-    pddl_heur_h2_t *h = pddl_container_of(_h, pddl_heur_h2_t, heur); /* Find the container/place in memory where h is stored */
-    _pddlHeurFree(&h->heur); /* Empty function???? */
-    pddlFDRVarsFree(&h->fdr_vars); /* Free the memory of the fdr variable fields that are pointers */
-    pddlH2Free(&h->h2); /* Free the memory of the fields in the h1 object that are pointers */
-    FREE(h); /* Free the memory of the h object */
+    pddl_heur_h2_t *h = pddl_container_of(_h, pddl_heur_h2_t, heur); 
+    _pddlHeurFree(&h->heur);
+    pddlFDRVarsFree(&h->fdr_vars);
+    pddlH2Free(&h->h2); 
+    FREE(h);
 }
 
 static int heurEstimate(pddl_heur_t *_h,
