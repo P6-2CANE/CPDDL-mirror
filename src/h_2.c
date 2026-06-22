@@ -83,9 +83,7 @@ void pddlH2Init(pddl_h2_t *h, const pddl_fdr_t *fdr) {
         PDDL_ISET_FOR_EACH(&pre, fact) {
             pddlISetAdd(&h->fact[fact].pre_op, op_id);
         }
-        PDDL_ISET(eff);
-        pddlFDRPartStateToGlobalIDs(&src->eff, &fdr->var, &eff);
-        pddlISetFree(&eff);
+        
         op->pre_size = pddlISetSize(&pre);
 
         /* If the operator has no preconditions, associate it with the "nopre" */
